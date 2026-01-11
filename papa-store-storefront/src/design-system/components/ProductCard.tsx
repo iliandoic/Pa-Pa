@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { clx } from "@medusajs/ui"
+import { clx } from "@lib/util/clx"
 import { ProductBadge, StockIndicator } from "./Badge"
 import { IconButton } from "./Button"
 

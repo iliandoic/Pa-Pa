@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { clx } from "@medusajs/ui"
+import { clx } from "@lib/util/clx"
 
 // =============================================================================
 // BREADCRUMBS COMPONENT

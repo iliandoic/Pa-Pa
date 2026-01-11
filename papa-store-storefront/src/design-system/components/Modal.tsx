@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback } from "react"
 import { createPortal } from "react-dom"
-import { clx } from "@medusajs/ui"
+import { clx } from "@lib/util/clx"
 
 // =============================================================================
 // MODAL COMPONENT

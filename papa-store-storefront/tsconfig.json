@@ -19,7 +19,8 @@
       "@lib/*": ["lib/*"],
       "@modules/*": ["modules/*"],
       "@pages/*": ["pages/*"],
-      "@design-system/*": ["design-system/*"]
+      "@design-system/*": ["design-system/*"],
+      "@medusajs/ui": ["lib/ui-stub"]
     },
     "plugins": [
       {

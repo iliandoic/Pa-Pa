@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { clx } from "@medusajs/ui"
+import { clx } from "@lib/util/clx"
 
 // =============================================================================
 // TABS COMPONENT

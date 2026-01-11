@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { clx } from "@medusajs/ui"
+import { clx } from "@lib/util/clx"
 import { SearchBar } from "./Input"
 import { IconButton } from "./Button"
 

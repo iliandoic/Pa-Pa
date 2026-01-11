@@ -1,7 +1,7 @@
 "use client"
 
 import { ReactNode } from "react"
-import { clx } from "@medusajs/ui"
+import { clx } from "@lib/util/clx"
 
 // =============================================================================
 // BADGE COMPONENT

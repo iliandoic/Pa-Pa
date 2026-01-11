@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { clx } from "@medusajs/ui"
+import { clx } from "@lib/util/clx"
 import { Input } from "./Input"
 import { Button } from "./Button"
 

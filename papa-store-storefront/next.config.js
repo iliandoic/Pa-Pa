@@ -1,12 +1,7 @@
+const path = require("path")
 const checkEnvVariables = require("./check-env-variables")
 
 checkEnvVariables()
-
-/**
- * Medusa Cloud-related environment variables
- */
-const S3_HOSTNAME = process.env.MEDUSA_CLOUD_S3_HOSTNAME
-const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
 
 /**
  * @type {import('next').NextConfig}
@@ -32,30 +27,21 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "medusa-public-images.s3.eu-west-1.amazonaws.com",
-      },
-      {
-        protocol: "https",
-        hostname: "medusa-server-testing.s3.amazonaws.com",
-      },
-      {
-        protocol: "https",
-        hostname: "medusa-server-testing.s3.us-east-1.amazonaws.com",
-      },
-      {
-        protocol: "https",
         hostname: "images.unsplash.com",
       },
-      ...(S3_HOSTNAME && S3_PATHNAME
-        ? [
-            {
-              protocol: "https",
-              hostname: S3_HOSTNAME,
-              pathname: S3_PATHNAME,
-            },
-          ]
-        : []),
+      {
+        protocol: "https",
+        hostname: "**.cloudflare.com",
+      },
     ],
+  },
+  webpack: (config) => {
+    // Alias @medusajs/ui to our stub
+    config.resolve.alias["@medusajs/ui"] = path.resolve(
+      __dirname,
+      "src/lib/ui-stub.tsx"
+    )
+    return config
   },
 }
 

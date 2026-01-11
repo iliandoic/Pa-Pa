@@ -1,6 +1,6 @@
 "use client"
 
-import { clx } from "@medusajs/ui"
+import { clx } from "@lib/util/clx"
 
 // =============================================================================
 // PAGINATION COMPONENT
