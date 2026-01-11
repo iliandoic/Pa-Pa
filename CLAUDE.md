@@ -4,67 +4,91 @@
 Building a modern e-commerce store for **Pa-Pa** - a Bulgarian baby shop.
 
 ## Key Decisions Made
-- **Platform**: Medusa.js (backend) + Next.js (frontend)
-- **Frontend**: Custom built with Next.js + React 19 + Tailwind CSS
-- **Database**: PostgreSQL on Neon (free tier)
+- **Backend**: Spring Boot 3.2 REST API (Java 21)
+- **Frontend**: Next.js + React 19 + Tailwind CSS
+- **Database**: PostgreSQL on Railway
 - **Image Hosting**: Cloudflare R2 (planned)
 - **Card Payments**: ProCredit Bank vPOS (target 0.5% fee)
 - **Other Payments**: COD (0%) + Bank transfer (0%)
 - **Shipping**: Speedy or Econt (whichever offers better rates)
 - **Products**: 10,000+ via custom API sync from supplier
 - **Monthly Cost**: ~$10-15/mo
-- **Timeline**: 6-8 weeks
+- **Timeline**: 5-6 weeks
 
 ## Technical Stack
-- **Backend**: Medusa.js v2.12.5 (Node.js/TypeScript)
-- **Frontend**: Next.js 15.3.8 + React 19 + Tailwind CSS
-- **Database**: PostgreSQL 16 on Neon
-- **UI Components**: @medusajs/ui + custom design system
-- **Styling**: Tailwind CSS
+- **Backend**: Spring Boot 3.2.1 (Java 21)
+- **Frontend**: Next.js 15 + React 19 + Tailwind CSS
+- **Database**: PostgreSQL on Railway
+- **Authentication**: JWT
+- **API Documentation**: SpringDoc OpenAPI (Swagger)
 
 ## Project Structure
 ```
 C:\PaPa\
-├── papa-store/              # Medusa backend
-│   ├── src/
-│   ├── medusa-config.ts
-│   └── .env                 # DATABASE_URL configured
-├── papa-store-storefront/   # Next.js frontend
-│   ├── src/
-│   │   └── design-system/   # Custom design system
-│   └── .env.local           # MEDUSA keys configured
-└── CLAUDE.md                # This file
+├── papa-api/                    # Spring Boot backend
+│   ├── src/main/java/bg/papa/
+│   │   ├── controller/          # REST controllers
+│   │   ├── service/             # Business logic
+│   │   ├── repository/          # JPA repositories
+│   │   ├── entity/              # JPA entities
+│   │   ├── dto/                 # Request/Response DTOs
+│   │   ├── config/              # Security, CORS config
+│   │   └── security/            # JWT authentication
+│   └── src/main/resources/
+│       └── application.yml      # Configuration
+├── papa-store-storefront/       # Next.js frontend
+│   └── src/
+│       └── design-system/       # Custom design system
+└── CLAUDE.md                    # This file
 ```
 
 ## Development URLs
-- **Storefront**: http://localhost:8000
-- **Medusa Admin**: http://localhost:9000/app
-- **Medusa API**: http://localhost:9000
+- **Backend API**: http://localhost:8080
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
+- **API Docs**: http://localhost:8080/api-docs
+- **Frontend**: http://localhost:3000
 
-## Admin Credentials
-- Email: admin@papa.bg
-- Password: admin123
+## API Endpoints
+### Public
+- `GET /api/health` - Health check
+- `GET /api/products` - List products (paginated)
+- `GET /api/products/{handle}` - Get product by handle
+- `GET /api/categories` - List categories
+- `POST /api/cart` - Create cart
+- `POST /api/auth/register` - Register customer
+- `POST /api/auth/login` - Login
+
+### Protected (JWT required)
+- `GET /api/customers/me` - Get current customer
+- `GET /api/orders` - List customer orders
+
+### Admin (ADMIN role required)
+- `GET /api/admin/products` - List all products
+- `POST /api/admin/products` - Create product
+- `POST /api/admin/sync/products` - Trigger supplier sync
 
 ## Database
-- **Provider**: Neon (free PostgreSQL)
-- **Connection**: Configured in papa-store/.env
+- **Provider**: Railway PostgreSQL
+- **Connection**: jdbc:postgresql://shuttle.proxy.rlwy.net:35983/railway
+- **Local Config**: papa-api/src/main/resources/application-local.yml
 
 ## Current Status
-- [x] Medusa.js backend set up
-- [x] Next.js frontend set up
-- [x] PostgreSQL database connected (Neon)
-- [x] Database migrations run
-- [x] Sample data seeded
-- [x] Admin user created
-- [x] Both servers running
+- [x] Spring Boot project created
+- [x] Railway PostgreSQL connected
+- [x] JPA entities defined (Product, Category, Cart, Order, Customer)
+- [x] JWT authentication configured
+- [x] Product API working
+- [x] Health endpoint working
+- [ ] Cart and Checkout APIs
+- [ ] Customer registration/login
 - [ ] Bulgarian settings (BGN, 20% VAT)
-- [ ] Design system implementation (IN PROGRESS)
-- [ ] Custom components
 - [ ] Supplier API integration
 - [ ] Payment integration (ProCredit vPOS)
 - [ ] Shipping integration (Speedy/Econt)
+- [ ] Connect frontend to Spring Boot API
+- [ ] Deploy to Railway
 
-## Design System (In Progress)
+## Design System
 Location: `papa-store-storefront/src/design-system/`
 
 ### Color Palette
@@ -77,9 +101,6 @@ Location: `papa-store-storefront/src/design-system/`
 - Display Font: Nunito (playful, rounded)
 - Body Font: Poppins (readable)
 
-### Files Created
-- `tokens.ts` - Design tokens (colors, typography, spacing)
-
 ## Bulgarian Specifics
 - Currency: BGN (лв)
 - Tax: 20% VAT (ДДС)
@@ -89,21 +110,17 @@ Location: `papa-store-storefront/src/design-system/`
 
 ## Commands
 ```bash
-# Start Medusa backend
-cd papa-store && npm run dev
+# Start Spring Boot backend (requires Java 21)
+cd papa-api
+set JAVA_HOME=C:\Program Files\Microsoft\jdk-21.0.9.10-hotspot
+mvn spring-boot:run -Dspring-boot.run.profiles=local
 
 # Start Next.js frontend
-cd papa-store-storefront && npm run dev
-
-# Run database migrations
-cd papa-store && npx medusa db:migrate
-
-# Seed database
-cd papa-store && npm run seed
-
-# Create admin user
-cd papa-store && npx medusa user -e email@example.com -p password
+cd papa-store-storefront
+npm run dev
 ```
 
-## Full Plan
-See: C:\Users\doich\.claude\plans\humble-rolling-tower.md
+## Deployment
+- **Backend**: Railway (auto-detects Java)
+- **Frontend**: Vercel or Railway
+- **Database**: Railway PostgreSQL (already configured)

@@ -8,7 +8,24 @@
       "WebSearch",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(docker build:*)",
+      "Bash(git -C \"C:\\\\PaPa\" log --oneline -20)",
+      "Bash(mvn spring-boot:run:*)",
+      "Bash(java -version:*)",
+      "Bash(javac:*)",
+      "Bash(winget install:*)",
+      "Bash(cmd /c run.cmd)",
+      "Bash(export JAVA_HOME=\"/c/Program Files/Microsoft/jdk-21.0.9.10-hotspot\")",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(\"/c/Program Files/maven/apache-maven-3.8.1/bin/mvn\" spring-boot:run -Dspring-boot.run.profiles=local)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd /c \"taskkill /F /PID 7744\")",
+      "Bash(\"/c/Program Files/maven/apache-maven-3.8.1/bin/mvn\" spring-boot:run -Dspring-boot.run.profiles=local -Dserver.port=8081)",
+      "Bash(tasklist:*)",
+      "Bash(curl:*)"
     ]
   }
 }
