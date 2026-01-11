@@ -1,9 +1,23 @@
 "use server"
 
 import { sdk } from "@lib/config"
-import medusaError from "@lib/util/medusa-error"
-import { HttpTypes } from "@medusajs/types"
 import { getCacheOptions } from "./cookies"
+
+// Types for region responses
+interface Region {
+  id: string
+  name: string
+  currency_code: string
+  tax_rate: number
+  countries?: Country[]
+}
+
+interface Country {
+  id?: string
+  iso_2: string
+  name?: string
+  display_name?: string
+}
 
 export const listRegions = async () => {
   const next = {
@@ -11,13 +25,27 @@ export const listRegions = async () => {
   }
 
   return sdk.client
-    .fetch<{ regions: HttpTypes.StoreRegion[] }>(`/store/regions`, {
+    .fetch<{ regions: Region[] }>(`/api/regions`, {
       method: "GET",
       next,
       cache: "force-cache",
     })
     .then(({ regions }) => regions)
-    .catch(medusaError)
+    .catch((error) => {
+      console.error("Error fetching regions:", error)
+      // Return default region for Bulgaria
+      return [
+        {
+          id: "reg_bg",
+          name: "Bulgaria",
+          currency_code: "BGN",
+          tax_rate: 20,
+          countries: [
+            { iso_2: "bg", name: "Bulgaria", display_name: "Bulgaria" },
+          ],
+        },
+      ]
+    })
 }
 
 export const retrieveRegion = async (id: string) => {
@@ -26,16 +54,19 @@ export const retrieveRegion = async (id: string) => {
   }
 
   return sdk.client
-    .fetch<{ region: HttpTypes.StoreRegion }>(`/store/regions/${id}`, {
+    .fetch<{ region: Region }>(`/api/regions/${id}`, {
       method: "GET",
       next,
       cache: "force-cache",
     })
     .then(({ region }) => region)
-    .catch(medusaError)
+    .catch((error) => {
+      console.error("Error fetching region:", error)
+      return null
+    })
 }
 
-const regionMap = new Map<string, HttpTypes.StoreRegion>()
+const regionMap = new Map<string, Region>()
 
 export const getRegion = async (countryCode: string) => {
   try {
@@ -57,7 +88,7 @@ export const getRegion = async (countryCode: string) => {
 
     const region = countryCode
       ? regionMap.get(countryCode)
-      : regionMap.get("us")
+      : regionMap.get("bg") // Default to Bulgaria instead of US
 
     return region
   } catch (e: any) {
