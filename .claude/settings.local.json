@@ -5,7 +5,10 @@
       "Bash(npx medusa:*)",
       "Bash(npm run build:*)",
       "Bash(npm run seed:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
