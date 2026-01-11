@@ -36,10 +36,14 @@ const nextConfig = {
     ],
   },
   webpack: (config) => {
-    // Alias @medusajs/ui to our stub
+    // Alias @medusajs packages to our stubs
     config.resolve.alias["@medusajs/ui"] = path.resolve(
       __dirname,
       "src/lib/ui-stub.tsx"
+    )
+    config.resolve.alias["@medusajs/icons"] = path.resolve(
+      __dirname,
+      "src/lib/icons-stub.tsx"
     )
     return config
   },

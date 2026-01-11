@@ -20,7 +20,8 @@
       "@modules/*": ["modules/*"],
       "@pages/*": ["pages/*"],
       "@design-system/*": ["design-system/*"],
-      "@medusajs/ui": ["lib/ui-stub"]
+      "@medusajs/ui": ["lib/ui-stub"],
+      "@medusajs/icons": ["lib/icons-stub"]
     },
     "plugins": [
       {
