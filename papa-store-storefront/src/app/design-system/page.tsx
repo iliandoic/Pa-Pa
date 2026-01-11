@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button, IconButton, AddToCartButton } from "@design-system/components/Button"
 import { Badge, ProductBadge, StockIndicator, Tag } from "@design-system/components/Badge"
-import { Input, SearchInput, QuantityInput } from "@design-system/components/Input"
+import { Input, SearchBar, QuantitySelector } from "@design-system/components/Input"
 
 export default function DesignSystemPage() {
   return (
@@ -222,14 +222,14 @@ export default function DesignSystemPage() {
             <div>
               <p className="text-sm text-neutral-500 mb-4">Search Input</p>
               <div className="max-w-md">
-                <SearchInput placeholder="Търсене на продукти..." />
+                <SearchBar placeholder="Търсене на продукти..." />
               </div>
             </div>
 
             {/* Quantity */}
             <div>
               <p className="text-sm text-neutral-500 mb-4">Quantity Input</p>
-              <QuantityInput value={1} min={1} max={10} onChange={() => {}} />
+              <QuantitySelector value={1} min={1} max={10} onChange={() => {}} />
             </div>
           </div>
         </section>
