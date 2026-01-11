@@ -9,7 +9,8 @@ RUN npm install --prefer-offline --no-audit
 # Copy source
 COPY . .
 
-# Build
+# Build - disable cache for this step
+ARG CACHEBUST=1
 RUN npm run build
 
 EXPOSE 9000
