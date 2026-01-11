@@ -14,50 +14,348 @@ export default function DesignSystemPage() {
           <Link href="/" className="font-display text-2xl font-bold text-primary">
             Pa-Pa
           </Link>
+          <nav className="hidden md:flex items-center gap-6">
+            <a href="#palettes" className="text-neutral-600 hover:text-primary transition-colors">Цветове</a>
+            <a href="#typography" className="text-neutral-600 hover:text-primary transition-colors">Типография</a>
+            <a href="#buttons" className="text-neutral-600 hover:text-primary transition-colors">Бутони</a>
+            <a href="#products" className="text-neutral-600 hover:text-primary transition-colors">Продукти</a>
+            <a href="#animations" className="text-neutral-600 hover:text-primary transition-colors">Анимации</a>
+          </nav>
           <h1 className="font-heading text-lg font-semibold">Design System</h1>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-12 space-y-16">
-        {/* Colors */}
-        <section>
-          <h2 className="font-heading text-2xl font-bold mb-6">Colors</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {/* Primary */}
-            <div className="space-y-2">
-              <div className="h-20 rounded-xl bg-primary shadow-primary"></div>
-              <p className="text-sm font-medium">Primary</p>
-              <p className="text-xs text-neutral-500">#FF6B52</p>
+        {/* Color Palettes */}
+        <section id="palettes">
+          <h2 className="font-heading text-2xl font-bold mb-6">Color Palettes</h2>
+
+          {/* Primary Palette */}
+          <div className="mb-8">
+            <h3 className="font-heading text-lg font-semibold mb-4">Primary (Soft Coral Pink)</h3>
+            <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-primary-50"></div>
+                <p className="text-xs text-center">50</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-primary-100"></div>
+                <p className="text-xs text-center">100</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-primary-200"></div>
+                <p className="text-xs text-center">200</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-primary-300"></div>
+                <p className="text-xs text-center">300</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-primary-400"></div>
+                <p className="text-xs text-center">400</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-primary-500 ring-2 ring-offset-2 ring-primary-500"></div>
+                <p className="text-xs text-center font-bold">500</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-primary-600"></div>
+                <p className="text-xs text-center">600</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-primary-700"></div>
+                <p className="text-xs text-center">700</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-primary-800"></div>
+                <p className="text-xs text-center">800</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-primary-900"></div>
+                <p className="text-xs text-center">900</p>
+              </div>
             </div>
-            {/* Secondary */}
-            <div className="space-y-2">
-              <div className="h-20 rounded-xl bg-secondary shadow-secondary"></div>
-              <p className="text-sm font-medium">Secondary</p>
-              <p className="text-xs text-neutral-500">#0EA5E9</p>
+          </div>
+
+          {/* Secondary Palette */}
+          <div className="mb-8">
+            <h3 className="font-heading text-lg font-semibold mb-4">Secondary (Baby Blue)</h3>
+            <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-secondary-50"></div>
+                <p className="text-xs text-center">50</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-secondary-100"></div>
+                <p className="text-xs text-center">100</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-secondary-200"></div>
+                <p className="text-xs text-center">200</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-secondary-300"></div>
+                <p className="text-xs text-center">300</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-secondary-400"></div>
+                <p className="text-xs text-center">400</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-secondary-500 ring-2 ring-offset-2 ring-secondary-500"></div>
+                <p className="text-xs text-center font-bold">500</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-secondary-600"></div>
+                <p className="text-xs text-center">600</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-secondary-700"></div>
+                <p className="text-xs text-center">700</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-secondary-800"></div>
+                <p className="text-xs text-center">800</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-secondary-900"></div>
+                <p className="text-xs text-center">900</p>
+              </div>
             </div>
-            {/* Mint */}
-            <div className="space-y-2">
-              <div className="h-20 rounded-xl bg-mint"></div>
-              <p className="text-sm font-medium">Mint</p>
-              <p className="text-xs text-neutral-500">#14B8A6</p>
+          </div>
+
+          {/* Mint Palette */}
+          <div className="mb-8">
+            <h3 className="font-heading text-lg font-semibold mb-4">Mint Green</h3>
+            <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-mint-50"></div>
+                <p className="text-xs text-center">50</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-mint-100"></div>
+                <p className="text-xs text-center">100</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-mint-200"></div>
+                <p className="text-xs text-center">200</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-mint-300"></div>
+                <p className="text-xs text-center">300</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-mint-400"></div>
+                <p className="text-xs text-center">400</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-mint-500 ring-2 ring-offset-2 ring-mint-500"></div>
+                <p className="text-xs text-center font-bold">500</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-mint-600"></div>
+                <p className="text-xs text-center">600</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-mint-700"></div>
+                <p className="text-xs text-center">700</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-mint-800"></div>
+                <p className="text-xs text-center">800</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-mint-900"></div>
+                <p className="text-xs text-center">900</p>
+              </div>
             </div>
-            {/* Sunny */}
-            <div className="space-y-2">
-              <div className="h-20 rounded-xl bg-sunny"></div>
-              <p className="text-sm font-medium">Sunny</p>
-              <p className="text-xs text-neutral-500">#EAB308</p>
+          </div>
+
+          {/* Sunny Palette */}
+          <div className="mb-8">
+            <h3 className="font-heading text-lg font-semibold mb-4">Sunny Yellow</h3>
+            <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-sunny-50"></div>
+                <p className="text-xs text-center">50</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-sunny-100"></div>
+                <p className="text-xs text-center">100</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-sunny-200"></div>
+                <p className="text-xs text-center">200</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-sunny-300"></div>
+                <p className="text-xs text-center">300</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-sunny-400"></div>
+                <p className="text-xs text-center">400</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-sunny-500 ring-2 ring-offset-2 ring-sunny-500"></div>
+                <p className="text-xs text-center font-bold">500</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-sunny-600"></div>
+                <p className="text-xs text-center">600</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-sunny-700"></div>
+                <p className="text-xs text-center">700</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-sunny-800"></div>
+                <p className="text-xs text-center">800</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-sunny-900"></div>
+                <p className="text-xs text-center">900</p>
+              </div>
             </div>
-            {/* Lavender */}
-            <div className="space-y-2">
-              <div className="h-20 rounded-xl bg-lavender"></div>
-              <p className="text-sm font-medium">Lavender</p>
-              <p className="text-xs text-neutral-500">#A855F7</p>
+          </div>
+
+          {/* Lavender Palette */}
+          <div className="mb-8">
+            <h3 className="font-heading text-lg font-semibold mb-4">Lavender</h3>
+            <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-lavender-50"></div>
+                <p className="text-xs text-center">50</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-lavender-100"></div>
+                <p className="text-xs text-center">100</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-lavender-200"></div>
+                <p className="text-xs text-center">200</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-lavender-300"></div>
+                <p className="text-xs text-center">300</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-lavender-400"></div>
+                <p className="text-xs text-center">400</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-lavender-500 ring-2 ring-offset-2 ring-lavender-500"></div>
+                <p className="text-xs text-center font-bold">500</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-lavender-600"></div>
+                <p className="text-xs text-center">600</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-lavender-700"></div>
+                <p className="text-xs text-center">700</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-lavender-800"></div>
+                <p className="text-xs text-center">800</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-lavender-900"></div>
+                <p className="text-xs text-center">900</p>
+              </div>
             </div>
-            {/* Peach */}
-            <div className="space-y-2">
-              <div className="h-20 rounded-xl bg-peach"></div>
-              <p className="text-sm font-medium">Peach</p>
-              <p className="text-xs text-neutral-500">#F97316</p>
+          </div>
+
+          {/* Peach Palette */}
+          <div className="mb-8">
+            <h3 className="font-heading text-lg font-semibold mb-4">Peach</h3>
+            <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-peach-50"></div>
+                <p className="text-xs text-center">50</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-peach-100"></div>
+                <p className="text-xs text-center">100</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-peach-200"></div>
+                <p className="text-xs text-center">200</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-peach-300"></div>
+                <p className="text-xs text-center">300</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-peach-400"></div>
+                <p className="text-xs text-center">400</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-peach-500 ring-2 ring-offset-2 ring-peach-500"></div>
+                <p className="text-xs text-center font-bold">500</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-peach-600"></div>
+                <p className="text-xs text-center">600</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-peach-700"></div>
+                <p className="text-xs text-center">700</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-peach-800"></div>
+                <p className="text-xs text-center">800</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-peach-900"></div>
+                <p className="text-xs text-center">900</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Neutral Palette */}
+          <div className="mb-8">
+            <h3 className="font-heading text-lg font-semibold mb-4">Neutral (Warm Grays)</h3>
+            <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-neutral-50 border"></div>
+                <p className="text-xs text-center">50</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-neutral-100"></div>
+                <p className="text-xs text-center">100</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-neutral-200"></div>
+                <p className="text-xs text-center">200</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-neutral-300"></div>
+                <p className="text-xs text-center">300</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-neutral-400"></div>
+                <p className="text-xs text-center">400</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-neutral-500"></div>
+                <p className="text-xs text-center">500</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-neutral-600"></div>
+                <p className="text-xs text-center">600</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-neutral-700"></div>
+                <p className="text-xs text-center">700</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-neutral-800"></div>
+                <p className="text-xs text-center">800</p>
+              </div>
+              <div className="space-y-1">
+                <div className="h-12 rounded-lg bg-neutral-900"></div>
+                <p className="text-xs text-center">900</p>
+              </div>
             </div>
           </div>
 
@@ -65,26 +363,63 @@ export default function DesignSystemPage() {
           <h3 className="font-heading text-lg font-semibold mt-8 mb-4">Semantic Colors</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <div className="h-16 rounded-xl bg-success"></div>
+              <div className="flex gap-2">
+                <div className="h-16 flex-1 rounded-xl bg-success-light"></div>
+                <div className="h-16 flex-1 rounded-xl bg-success"></div>
+                <div className="h-16 flex-1 rounded-xl bg-success-dark"></div>
+              </div>
               <p className="text-sm font-medium">Success</p>
             </div>
             <div className="space-y-2">
-              <div className="h-16 rounded-xl bg-warning"></div>
+              <div className="flex gap-2">
+                <div className="h-16 flex-1 rounded-xl bg-warning-light"></div>
+                <div className="h-16 flex-1 rounded-xl bg-warning"></div>
+                <div className="h-16 flex-1 rounded-xl bg-warning-dark"></div>
+              </div>
               <p className="text-sm font-medium">Warning</p>
             </div>
             <div className="space-y-2">
-              <div className="h-16 rounded-xl bg-error"></div>
+              <div className="flex gap-2">
+                <div className="h-16 flex-1 rounded-xl bg-error-light"></div>
+                <div className="h-16 flex-1 rounded-xl bg-error"></div>
+                <div className="h-16 flex-1 rounded-xl bg-error-dark"></div>
+              </div>
               <p className="text-sm font-medium">Error</p>
             </div>
             <div className="space-y-2">
-              <div className="h-16 rounded-xl bg-info"></div>
+              <div className="flex gap-2">
+                <div className="h-16 flex-1 rounded-xl bg-info-light"></div>
+                <div className="h-16 flex-1 rounded-xl bg-info"></div>
+                <div className="h-16 flex-1 rounded-xl bg-info-dark"></div>
+              </div>
               <p className="text-sm font-medium">Info</p>
+            </div>
+          </div>
+
+          {/* Badge Colors */}
+          <h3 className="font-heading text-lg font-semibold mt-8 mb-4">Badge Colors</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <div className="h-12 rounded-xl bg-sale"></div>
+              <p className="text-sm font-medium">Sale (#EF4444)</p>
+            </div>
+            <div className="space-y-2">
+              <div className="h-12 rounded-xl bg-new"></div>
+              <p className="text-sm font-medium">New (#10B981)</p>
+            </div>
+            <div className="space-y-2">
+              <div className="h-12 rounded-xl bg-bestseller"></div>
+              <p className="text-sm font-medium">Bestseller (#F59E0B)</p>
+            </div>
+            <div className="space-y-2">
+              <div className="h-12 rounded-xl bg-lowstock"></div>
+              <p className="text-sm font-medium">Low Stock (#F97316)</p>
             </div>
           </div>
         </section>
 
         {/* Typography */}
-        <section>
+        <section id="typography">
           <h2 className="font-heading text-2xl font-bold mb-6">Typography</h2>
           <div className="bg-white rounded-2xl p-8 space-y-6">
             <div>
@@ -106,7 +441,7 @@ export default function DesignSystemPage() {
         </section>
 
         {/* Buttons */}
-        <section>
+        <section id="buttons">
           <h2 className="font-heading text-2xl font-bold mb-6">Buttons</h2>
           <div className="bg-white rounded-2xl p-8 space-y-8">
             {/* Variants */}
@@ -275,6 +610,174 @@ export default function DesignSystemPage() {
             <div className="w-20 h-20 bg-primary rounded-xl flex items-center justify-center text-white text-xs">xl</div>
             <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center text-white text-xs">2xl</div>
             <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white text-xs">full</div>
+          </div>
+        </section>
+
+        {/* Product Cards */}
+        <section id="products">
+          <h2 className="font-heading text-2xl font-bold mb-6">Product Cards</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Product Card - Standard */}
+            <div className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-shadow overflow-hidden group">
+              <div className="relative aspect-square bg-neutral-100">
+                <div className="absolute inset-0 flex items-center justify-center text-neutral-400">
+                  <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <ProductBadge type="new" />
+              </div>
+              <div className="p-4">
+                <p className="text-xs text-neutral-500 mb-1">Бебешки колички</p>
+                <h3 className="font-heading font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors">
+                  Детска количка Премиум
+                </h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="font-heading font-bold text-lg text-primary">459.00 лв</span>
+                </div>
+                <AddToCartButton />
+              </div>
+            </div>
+
+            {/* Product Card - On Sale */}
+            <div className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-shadow overflow-hidden group">
+              <div className="relative aspect-square bg-neutral-100">
+                <div className="absolute inset-0 flex items-center justify-center text-neutral-400">
+                  <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <ProductBadge type="sale" value={25} />
+              </div>
+              <div className="p-4">
+                <p className="text-xs text-neutral-500 mb-1">Играчки</p>
+                <h3 className="font-heading font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors">
+                  Плюшена играчка Мече
+                </h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="font-heading font-bold text-lg text-primary">29.99 лв</span>
+                  <span className="text-sm text-neutral-400 line-through">39.99 лв</span>
+                </div>
+                <AddToCartButton />
+              </div>
+            </div>
+
+            {/* Product Card - Low Stock */}
+            <div className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-shadow overflow-hidden group">
+              <div className="relative aspect-square bg-neutral-100">
+                <div className="absolute inset-0 flex items-center justify-center text-neutral-400">
+                  <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <Badge variant="lowstock" className="absolute top-3 left-3">Последни 2 бр.</Badge>
+              </div>
+              <div className="p-4">
+                <p className="text-xs text-neutral-500 mb-1">Дрехи</p>
+                <h3 className="font-heading font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors">
+                  Бебешко боди органичен памук
+                </h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="font-heading font-bold text-lg text-primary">19.90 лв</span>
+                </div>
+                <StockIndicator stock={2} />
+              </div>
+            </div>
+
+            {/* Product Card - Bestseller */}
+            <div className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-shadow overflow-hidden group">
+              <div className="relative aspect-square bg-neutral-100">
+                <div className="absolute inset-0 flex items-center justify-center text-neutral-400">
+                  <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <Badge variant="bestseller" className="absolute top-3 left-3">Бестселър</Badge>
+              </div>
+              <div className="p-4">
+                <p className="text-xs text-neutral-500 mb-1">Аксесоари</p>
+                <h3 className="font-heading font-semibold text-neutral-800 mb-2 group-hover:text-primary transition-colors">
+                  Бебешко одеяло мериносова вълна
+                </h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="font-heading font-bold text-lg text-primary">89.00 лв</span>
+                </div>
+                <AddToCartButton isAdded />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Animations */}
+        <section id="animations">
+          <h2 className="font-heading text-2xl font-bold mb-6">Animations</h2>
+          <div className="bg-white rounded-2xl p-8 space-y-8">
+            {/* Playful Animations */}
+            <div>
+              <p className="text-sm text-neutral-500 mb-4">Playful Animations (hover to see)</p>
+              <div className="flex flex-wrap gap-6">
+                <div className="w-24 h-24 bg-primary rounded-2xl flex items-center justify-center text-white text-xs font-medium hover:animate-bounce-soft cursor-pointer">
+                  bounce-soft
+                </div>
+                <div className="w-24 h-24 bg-secondary rounded-2xl flex items-center justify-center text-white text-xs font-medium hover:animate-pulse-soft cursor-pointer">
+                  pulse-soft
+                </div>
+                <div className="w-24 h-24 bg-mint rounded-2xl flex items-center justify-center text-white text-xs font-medium hover:animate-wiggle cursor-pointer">
+                  wiggle
+                </div>
+              </div>
+            </div>
+
+            {/* Running Animations */}
+            <div>
+              <p className="text-sm text-neutral-500 mb-4">Always Running Animations</p>
+              <div className="flex flex-wrap gap-6">
+                <div className="w-24 h-24 bg-lavender rounded-2xl flex items-center justify-center text-white text-xs font-medium animate-bounce-soft">
+                  bounce-soft
+                </div>
+                <div className="w-24 h-24 bg-sunny rounded-2xl flex items-center justify-center text-white text-xs font-medium animate-pulse-soft">
+                  pulse-soft
+                </div>
+                <div className="w-24 h-24 bg-peach rounded-2xl flex items-center justify-center text-white text-xs font-medium animate-ring">
+                  ring (spin)
+                </div>
+              </div>
+            </div>
+
+            {/* Transition Animations */}
+            <div>
+              <p className="text-sm text-neutral-500 mb-4">Transition Effects (built-in)</p>
+              <div className="flex flex-wrap gap-4">
+                <div className="px-6 py-4 bg-primary-100 rounded-xl text-primary-700 font-medium transition-all duration-300 hover:bg-primary hover:text-white hover:shadow-primary hover:scale-105 cursor-pointer">
+                  Scale + Shadow
+                </div>
+                <div className="px-6 py-4 bg-secondary-100 rounded-xl text-secondary-700 font-medium transition-all duration-300 hover:bg-secondary hover:text-white hover:-translate-y-1 cursor-pointer">
+                  Lift Up
+                </div>
+                <div className="px-6 py-4 bg-mint-100 rounded-xl text-mint-700 font-medium transition-all duration-500 hover:bg-mint hover:text-white hover:rotate-3 cursor-pointer">
+                  Rotate
+                </div>
+              </div>
+            </div>
+
+            {/* Fade In Animations */}
+            <div>
+              <p className="text-sm text-neutral-500 mb-4">Fade In Animations (applied on load)</p>
+              <div className="flex flex-wrap gap-4">
+                <div className="px-6 py-4 bg-white border rounded-xl animate-fade-in-right">
+                  fade-in-right
+                </div>
+                <div className="px-6 py-4 bg-white border rounded-xl animate-fade-in-top">
+                  fade-in-top
+                </div>
+                <div className="px-6 py-4 bg-white border rounded-xl animate-dropdown-in">
+                  dropdown-in
+                </div>
+                <div className="px-6 py-4 bg-white border rounded-xl animate-enter">
+                  enter
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
