@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /b C:PaPa)",
+      "Bash(npx medusa:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run seed:*)",
+      "WebSearch"
+    ]
+  }
+}
