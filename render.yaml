@@ -1,0 +1,53 @@
+databases:
+  - name: papa-store-db
+    plan: free
+    databaseName: papa_store
+    user: papa_store_user
+
+services:
+  # Medusa Backend
+  - type: web
+    name: papa-store-backend
+    plan: free
+    runtime: node
+    rootDir: papa-store
+    buildCommand: npm install && npx medusa db:migrate && npm run build
+    startCommand: npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: papa-store-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: MEDUSA_ADMIN_ONBOARDING_TYPE
+        value: nextjs
+      - key: STORE_CORS
+        value: https://papa-store-frontend.onrender.com
+      - key: ADMIN_CORS
+        value: https://papa-store-frontend.onrender.com
+      - key: AUTH_CORS
+        value: https://papa-store-frontend.onrender.com
+
+  # Next.js Frontend
+  - type: web
+    name: papa-store-frontend
+    plan: free
+    runtime: node
+    rootDir: papa-store-storefront
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_MEDUSA_BACKEND_URL
+        value: https://papa-store-backend.onrender.com
+      - key: NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+        sync: false
+      - key: REVALIDATE_WINDOW
+        value: "0"
