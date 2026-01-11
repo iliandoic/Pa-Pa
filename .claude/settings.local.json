@@ -25,7 +25,9 @@
       "Bash(cmd /c \"taskkill /F /PID 7744\")",
       "Bash(\"/c/Program Files/maven/apache-maven-3.8.1/bin/mvn\" spring-boot:run -Dspring-boot.run.profiles=local -Dserver.port=8081)",
       "Bash(tasklist:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)"
     ]
   }
 }
