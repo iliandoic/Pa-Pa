@@ -57,6 +57,18 @@ public class Product {
     @Column(name = "supplier_title")
     private String supplierTitle;
 
+    // Enrichment data
+    private String brand;
+
+    @Column(columnDefinition = "TEXT")
+    private String ingredients;
+
+    @Column(name = "age_range")
+    private String ageRange;
+
+    @Column(name = "match_score")
+    private Double matchScore;
+
     // Status
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

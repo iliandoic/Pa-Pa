@@ -23,6 +23,10 @@ public class ProductResponse {
     private BigDecimal compareAtPrice;
     private String supplierSku;
     private String supplierTitle;
+    private String brand;
+    private String ingredients;
+    private String ageRange;
+    private Double matchScore;
     private Integer stock;
     private BigDecimal weight;
     private UUID categoryId;
@@ -54,6 +58,10 @@ public class ProductResponse {
                 .compareAtPrice(product.getCompareAtPrice())
                 .supplierSku(product.getSupplierSku())
                 .supplierTitle(product.getSupplierTitle())
+                .brand(product.getBrand())
+                .ingredients(product.getIngredients())
+                .ageRange(product.getAgeRange())
+                .matchScore(product.getMatchScore())
                 .stock(product.getStock())
                 .weight(product.getWeight())
                 .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
