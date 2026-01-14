@@ -46,3 +46,12 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
+
+# Mistral API Configuration
+mistral:
+  api:
+    base-url: ${MISTRAL_API_URL:http://213.91.211.247:8090}
+    username: ${MISTRAL_USERNAME:5}
+    password: ${MISTRAL_PASSWORD:640270}
+    location-id: ${MISTRAL_LOCATION_ID:5}
+    price-id: ${MISTRAL_PRICE_ID:1}

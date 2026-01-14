@@ -1,0 +1,122 @@
+package bg.papa.controller;
+
+import bg.papa.dto.mistral.MistralProductDto;
+import bg.papa.service.MistralApiClient;
+import bg.papa.service.MistralSyncService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/admin/sync")
+@RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Admin Sync", description = "Endpoints for syncing products from Mistral")
+public class AdminSyncController {
+
+    private final MistralApiClient mistralApiClient;
+    private final MistralSyncService mistralSyncService;
+
+    @GetMapping("/test")
+    @Operation(summary = "Test Mistral API connection")
+    public ResponseEntity<Map<String, Object>> testConnection() {
+        try {
+            String token = mistralApiClient.authenticate();
+            return ResponseEntity.ok(Map.of(
+                    "status", "connected",
+                    "message", "Successfully authenticated with Mistral API",
+                    "tokenPreview", token.substring(0, 20) + "..."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    @GetMapping("/products/search")
+    @Operation(summary = "Search products in Mistral by code")
+    public ResponseEntity<List<MistralProductDto>> searchProducts(@RequestParam String search) {
+        List<MistralProductDto> products = mistralApiClient.fetchProducts(search);
+        return ResponseEntity.ok(products);
+    }
+
+    @PostMapping("/products/code/{code}")
+    @Operation(summary = "Sync a single product by Mistral code")
+    public ResponseEntity<Map<String, Object>> syncProductByCode(@PathVariable String code) {
+        try {
+            var product = mistralSyncService.syncProductByCode(code);
+            if (product != null) {
+                return ResponseEntity.ok(Map.of(
+                        "status", "success",
+                        "message", "Product synced successfully",
+                        "productId", product.getId(),
+                        "productTitle", product.getTitle()
+                ));
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/products/range")
+    @Operation(summary = "Sync products from a range of Mistral codes")
+    public ResponseEntity<Map<String, Object>> syncProductRange(
+            @RequestParam(defaultValue = "1") int startCode,
+            @RequestParam(defaultValue = "100") int endCode) {
+
+        if (endCode - startCode > 1000) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Range too large. Maximum 1000 codes at a time."
+            ));
+        }
+
+        try {
+            var result = mistralSyncService.syncProductsByCodeRange(startCode, endCode);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "created", result.created(),
+                    "updated", result.updated(),
+                    "errors", result.errors(),
+                    "total", result.total()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/stock")
+    @Operation(summary = "Sync stock quantities only for existing products")
+    public ResponseEntity<Map<String, Object>> syncStock() {
+        try {
+            var result = mistralSyncService.syncStockOnly();
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "updated", result.updated(),
+                    "errors", result.errors(),
+                    "total", result.total()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
+        }
+    }
+}
