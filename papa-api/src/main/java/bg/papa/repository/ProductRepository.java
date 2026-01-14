@@ -18,8 +18,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     Optional<Product> findByHandle(String handle);
 
-    Optional<Product> findBySku(String sku);
-
     Optional<Product> findBySupplierSku(String supplierSku);
 
     Page<Product> findByStatus(ProductStatus status, Pageable pageable);
@@ -33,7 +31,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
                                  @Param("status") ProductStatus status,
                                  Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.manualEntry = false AND p.supplierSku IS NOT NULL")
+    @Query("SELECT p FROM Product p WHERE p.supplierSku IS NOT NULL")
     List<Product> findProductsForSync();
 
     List<Product> findBySupplierSkuIn(List<String> supplierSkus);

@@ -9,8 +9,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -33,8 +31,6 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    private String thumbnail;
-
     @Column(columnDefinition = "TEXT")
     private String images; // JSON array of image URLs
 
@@ -43,9 +39,6 @@ public class Product {
 
     @Column(name = "compare_at_price", precision = 10, scale = 2)
     private BigDecimal compareAtPrice;
-
-    @Column(unique = true)
-    private String sku;
 
     @Column(nullable = false)
     private Integer stock = 0;
@@ -57,25 +50,12 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductVariant> variants = new ArrayList<>();
-
-    // Supplier sync fields
-    @Column(name = "supplier_sku")
+    // Supplier data (from Mistral)
+    @Column(name = "supplier_sku", unique = true)
     private String supplierSku;
 
-    @Column(name = "manual_entry")
-    private Boolean manualEntry = false;
-
-    @Column(name = "last_synced_at")
-    private LocalDateTime lastSyncedAt;
-
-    // SEO fields
-    @Column(name = "meta_title")
-    private String metaTitle;
-
-    @Column(name = "meta_description", columnDefinition = "TEXT")
-    private String metaDescription;
+    @Column(name = "supplier_title")
+    private String supplierTitle;
 
     // Status
     @Enumerated(EnumType.STRING)

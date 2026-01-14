@@ -21,7 +21,8 @@ public class ProductResponse {
     private List<String> images;
     private BigDecimal price;
     private BigDecimal compareAtPrice;
-    private String sku;
+    private String supplierSku;
+    private String supplierTitle;
     private Integer stock;
     private BigDecimal weight;
     private UUID categoryId;
@@ -40,16 +41,19 @@ public class ProductResponse {
             }
         }
 
+        String thumbnail = imageList.isEmpty() ? null : imageList.get(0);
+
         return ProductResponse.builder()
                 .id(product.getId())
                 .handle(product.getHandle())
                 .title(product.getTitle())
                 .description(product.getDescription())
-                .thumbnail(product.getThumbnail())
+                .thumbnail(thumbnail)
                 .images(imageList)
                 .price(product.getPrice())
                 .compareAtPrice(product.getCompareAtPrice())
-                .sku(product.getSku())
+                .supplierSku(product.getSupplierSku())
+                .supplierTitle(product.getSupplierTitle())
                 .stock(product.getStock())
                 .weight(product.getWeight())
                 .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)

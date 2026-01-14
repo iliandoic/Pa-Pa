@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -82,7 +83,6 @@ public class MistralSyncService {
                 MistralProductDto mistralProduct = mistralApiClient.fetchProductByCode(product.getSupplierSku());
                 if (mistralProduct != null) {
                     product.setStock(mistralProduct.getQttyAsInteger());
-                    product.setLastSyncedAt(LocalDateTime.now());
                     productRepository.save(product);
                     updated++;
                 }
@@ -104,35 +104,37 @@ public class MistralSyncService {
         Optional<Product> existingProduct = productRepository.findBySupplierSku(mistralProduct.getCode());
 
         Product product;
+        boolean isNew = false;
+
         if (existingProduct.isPresent()) {
             product = existingProduct.get();
-            // Only update if not marked as manual entry
-            if (Boolean.TRUE.equals(product.getManualEntry())) {
-                log.debug("Skipping manual entry product: {}", product.getSupplierSku());
-                return product;
-            }
         } else {
             product = new Product();
             product.setSupplierSku(mistralProduct.getCode());
             product.setHandle(generateHandle(mistralProduct.getName(), mistralProduct.getCode()));
             product.setStatus(ProductStatus.DRAFT);
+            // Set title from Mistral only on first create
+            product.setTitle(mistralProduct.getName());
+            isNew = true;
         }
 
-        // Update product fields from Mistral
-        product.setTitle(mistralProduct.getName());
-        product.setPrice(mistralProduct.getSalesPriceAsBigDecimal());
+        // Always update supplier title from Mistral
+        product.setSupplierTitle(mistralProduct.getName());
+
+        // Update price and stock from Mistral
+        BigDecimal salesPrice = mistralProduct.getSalesPriceAsBigDecimal();
+        BigDecimal basePrice = mistralProduct.getBaseSalePrice();
+
+        product.setPrice(salesPrice);
+
+        // Set compareAtPrice if there's a discount (basePrice > salesPrice)
+        if (basePrice != null && basePrice.compareTo(salesPrice) > 0) {
+            product.setCompareAtPrice(basePrice);
+        } else {
+            product.setCompareAtPrice(null);
+        }
+
         product.setStock(mistralProduct.getQttyAsInteger());
-        product.setSku(mistralProduct.getCode());
-
-        if (mistralProduct.getDescription() != null && !mistralProduct.getDescription().isEmpty()) {
-            product.setDescription(mistralProduct.getDescription());
-        }
-
-        if (mistralProduct.getBarcode() != null && !mistralProduct.getBarcode().isEmpty()) {
-            // Store barcode in a field if needed
-        }
-
-        product.setLastSyncedAt(LocalDateTime.now());
 
         return productRepository.save(product);
     }

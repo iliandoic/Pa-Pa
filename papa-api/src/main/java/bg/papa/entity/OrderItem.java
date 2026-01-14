@@ -27,16 +27,11 @@ public class OrderItem {
     @Column(name = "product_id")
     private UUID productId;
 
-    @Column(name = "variant_id")
-    private UUID variantId;
-
     @Column(name = "product_title", nullable = false)
     private String productTitle;
 
-    @Column(name = "variant_title")
-    private String variantTitle;
-
-    private String sku;
+    @Column(name = "supplier_sku")
+    private String supplierSku;
 
     private String thumbnail;
 
@@ -51,20 +46,28 @@ public class OrderItem {
 
     public static OrderItem fromCartItem(CartItem cartItem) {
         OrderItem item = new OrderItem();
-        item.setProductId(cartItem.getProduct().getId());
-        item.setProductTitle(cartItem.getProduct().getTitle());
-        item.setSku(cartItem.getProduct().getSku());
-        item.setThumbnail(cartItem.getProduct().getThumbnail());
+        Product product = cartItem.getProduct();
+
+        item.setProductId(product.getId());
+        item.setProductTitle(product.getTitle());
+        item.setSupplierSku(product.getSupplierSku());
+        item.setThumbnail(getFirstImage(product.getImages()));
         item.setQuantity(cartItem.getQuantity());
         item.setUnitPrice(cartItem.getUnitPrice());
         item.setLineTotal(cartItem.getLineTotal());
 
-        if (cartItem.getVariant() != null) {
-            item.setVariantId(cartItem.getVariant().getId());
-            item.setVariantTitle(cartItem.getVariant().getTitle());
-            item.setSku(cartItem.getVariant().getSku());
-        }
-
         return item;
+    }
+
+    private static String getFirstImage(String imagesJson) {
+        if (imagesJson == null || imagesJson.isBlank()) {
+            return null;
+        }
+        String images = imagesJson.replace("[", "").replace("]", "").replace("\"", "");
+        if (images.isBlank()) {
+            return null;
+        }
+        String[] imageArray = images.split(",");
+        return imageArray.length > 0 ? imageArray[0].trim() : null;
     }
 }
