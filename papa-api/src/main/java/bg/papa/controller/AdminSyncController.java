@@ -77,15 +77,35 @@ public class AdminSyncController {
             @RequestParam(defaultValue = "1") int startCode,
             @RequestParam(defaultValue = "100") int endCode) {
 
-        if (endCode - startCode > 1000) {
+        if (endCode - startCode > 50000) {
             return ResponseEntity.badRequest().body(Map.of(
                     "status", "error",
-                    "message", "Range too large. Maximum 1000 codes at a time."
+                    "message", "Range too large. Maximum 50000 codes at a time."
             ));
         }
 
         try {
             var result = mistralSyncService.syncProductsByCodeRange(startCode, endCode);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "created", result.created(),
+                    "updated", result.updated(),
+                    "errors", result.errors(),
+                    "total", result.total()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/products/all")
+    @Operation(summary = "Bulk sync all products from Mistral (searches 0-9)")
+    public ResponseEntity<Map<String, Object>> syncAllProducts() {
+        try {
+            var result = mistralSyncService.syncAllProducts();
             return ResponseEntity.ok(Map.of(
                     "status", "success",
                     "created", result.created(),

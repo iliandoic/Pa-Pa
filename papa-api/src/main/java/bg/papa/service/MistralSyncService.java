@@ -112,7 +112,7 @@ public class MistralSyncService {
             product = new Product();
             product.setSupplierSku(mistralProduct.getCode());
             product.setHandle(generateHandle(mistralProduct.getName(), mistralProduct.getCode()));
-            product.setStatus(ProductStatus.DRAFT);
+            product.setStatus(ProductStatus.PUBLISHED);
             // Set title from Mistral only on first create
             product.setTitle(mistralProduct.getName());
             isNew = true;
@@ -195,6 +195,49 @@ public class MistralSyncService {
         }
 
         return text;
+    }
+
+    /**
+     * Bulk sync all products using search patterns
+     * More efficient than code-by-code iteration
+     */
+    @Transactional
+    public SyncResult syncAllProducts() {
+        log.info("Starting bulk sync of all products");
+
+        int created = 0;
+        int updated = 0;
+        int errors = 0;
+        int total = 0;
+
+        // Search with single digits 0-9 to get all products
+        for (int digit = 0; digit <= 9; digit++) {
+            try {
+                List<MistralProductDto> products = mistralApiClient.fetchProducts(String.valueOf(digit));
+                log.info("Found {} products for digit {}", products.size(), digit);
+
+                for (MistralProductDto mistralProduct : products) {
+                    try {
+                        Product product = syncProduct(mistralProduct);
+                        if (product.getCreatedAt() != null &&
+                            product.getCreatedAt().isAfter(LocalDateTime.now().minusSeconds(5))) {
+                            created++;
+                        } else {
+                            updated++;
+                        }
+                        total++;
+                    } catch (Exception e) {
+                        log.error("Error syncing product {}: {}", mistralProduct.getCode(), e.getMessage());
+                        errors++;
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error fetching products for digit {}: {}", digit, e.getMessage());
+            }
+        }
+
+        log.info("Bulk sync completed: {} created, {} updated, {} errors, {} total", created, updated, errors, total);
+        return new SyncResult(created, updated, errors, total);
     }
 
     /**

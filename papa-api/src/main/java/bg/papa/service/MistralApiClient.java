@@ -121,24 +121,39 @@ public class MistralApiClient {
     }
 
     /**
-     * Fetches products by iterating through a range of codes
+     * Fetches products by iterating through a range of codes (parallel)
      */
     public List<MistralProductDto> fetchProductsByCodeRange(int startCode, int endCode) {
-        List<MistralProductDto> allProducts = new java.util.ArrayList<>();
+        List<MistralProductDto> allProducts = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+
+        // Use parallel streams with limited concurrency
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(10);
+        java.util.List<java.util.concurrent.Future<?>> futures = new java.util.ArrayList<>();
 
         for (int code = startCode; code <= endCode; code++) {
-            try {
-                List<MistralProductDto> products = fetchProducts(String.valueOf(code));
-                if (!products.isEmpty()) {
-                    allProducts.addAll(products);
-                    log.debug("Found {} products for code {}", products.size(), code);
+            final int currentCode = code;
+            futures.add(executor.submit(() -> {
+                try {
+                    List<MistralProductDto> products = fetchProducts(String.valueOf(currentCode));
+                    if (!products.isEmpty()) {
+                        allProducts.addAll(products);
+                        log.debug("Found {} products for code {}", products.size(), currentCode);
+                    }
+                } catch (Exception e) {
+                    log.warn("Error fetching code {}: {}", currentCode, e.getMessage());
                 }
-                // Small delay to avoid overwhelming the API
-                Thread.sleep(50);
+            }));
+        }
+
+        // Wait for all to complete
+        for (java.util.concurrent.Future<?> future : futures) {
+            try {
+                future.get();
             } catch (Exception e) {
-                log.warn("Error fetching code {}: {}", code, e.getMessage());
+                log.warn("Task failed: {}", e.getMessage());
             }
         }
+        executor.shutdown();
 
         log.info("Fetched total of {} products from code range {}-{}",
                 allProducts.size(), startCode, endCode);

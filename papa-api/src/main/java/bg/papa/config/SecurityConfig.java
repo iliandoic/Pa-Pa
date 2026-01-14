@@ -59,6 +59,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/shipping/calculate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/shipping/*/offices").permitAll()
 
+                // Admin sync endpoints (temporarily public for initial import)
+                .requestMatchers("/api/admin/sync/**").permitAll()
+
                 // Admin endpoints (require ADMIN role)
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
