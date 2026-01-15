@@ -490,39 +490,61 @@ export default function AdminProductsPage() {
         </div>
       )}
 
-      {/* Quick Edit Modal */}
+      {/* Quick Edit Modal - Two Column Layout */}
       {quickViewProduct && (
         <div
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
           onClick={closeQuickView}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white z-10">
+            <div className="flex items-center justify-between px-6 py-4 border-b flex-shrink-0">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Edit Product</h3>
                 {quickViewProduct.supplierSku && (
                   <p className="text-xs text-gray-400">SKU: {quickViewProduct.supplierSku}</p>
                 )}
               </div>
-              <button
-                onClick={closeQuickView}
-                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
-              >
-                ×
-              </button>
+              <div className="flex items-center gap-3">
+                <Link
+                  href={`/admin/products/${quickViewProduct.id}`}
+                  className="text-sm text-gray-500 hover:text-primary-600 flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Full page
+                </Link>
+                <button
+                  onClick={closeQuickView}
+                  className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
-            {/* Content */}
-            <div className="p-6 space-y-6">
-              {/* Basic Info Section */}
-              <div>
-                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Basic Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
+            {/* Two Column Content */}
+            <div className="flex-1 flex overflow-hidden">
+              {/* Left Column - Images */}
+              <div className="w-80 flex-shrink-0 border-r bg-gray-50 p-4 overflow-y-auto">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Images</h4>
+                <ImageUploader
+                  images={quickEditData.images}
+                  onChange={(urls) => setQuickEditData({ ...quickEditData, images: urls })}
+                  maxImages={10}
+                  compact
+                />
+              </div>
+
+              {/* Right Column - Form Fields */}
+              <div className="flex-1 p-6 overflow-y-auto">
+                <div className="space-y-4">
+                  {/* Title */}
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                     <input
                       type="text"
@@ -535,7 +557,104 @@ export default function AdminProductsPage() {
                     )}
                   </div>
 
-                  <div className="md:col-span-2">
+                  {/* Row: Price, Compare Price, Stock */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Price (EUR)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={quickEditData.price}
+                        onChange={(e) => setQuickEditData({ ...quickEditData, price: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Compare Price</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={quickEditData.compareAtPrice}
+                        onChange={(e) => setQuickEditData({ ...quickEditData, compareAtPrice: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        placeholder="Original"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                      <input
+                        type="number"
+                        value={quickEditData.stock}
+                        onChange={(e) => setQuickEditData({ ...quickEditData, stock: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Row: Status, Category, Weight */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                      <select
+                        value={quickEditData.status}
+                        onChange={(e) => setQuickEditData({ ...quickEditData, status: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      >
+                        <option value="PUBLISHED">Published</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="ARCHIVED">Archived</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                      <select
+                        value={quickEditData.categoryId}
+                        onChange={(e) => setQuickEditData({ ...quickEditData, categoryId: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      >
+                        <option value="">No Category</option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={quickEditData.weight}
+                        onChange={(e) => setQuickEditData({ ...quickEditData, weight: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Row: Brand, Age Range */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                      <input
+                        type="text"
+                        value={quickEditData.brand}
+                        onChange={(e) => setQuickEditData({ ...quickEditData, brand: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Age Range</label>
+                      <input
+                        type="text"
+                        value={quickEditData.ageRange}
+                        onChange={(e) => setQuickEditData({ ...quickEditData, ageRange: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        placeholder="e.g., 0-6 months"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                     <textarea
                       value={quickEditData.description}
@@ -545,106 +664,8 @@ export default function AdminProductsPage() {
                     />
                   </div>
 
+                  {/* Ingredients */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (EUR)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={quickEditData.price}
-                      onChange={(e) => setQuickEditData({ ...quickEditData, price: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Compare at Price (EUR)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={quickEditData.compareAtPrice}
-                      onChange={(e) => setQuickEditData({ ...quickEditData, compareAtPrice: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="Original price for discounts"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                    <input
-                      type="number"
-                      value={quickEditData.stock}
-                      onChange={(e) => setQuickEditData({ ...quickEditData, stock: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={quickEditData.weight}
-                      onChange={(e) => setQuickEditData({ ...quickEditData, weight: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="For shipping"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select
-                      value={quickEditData.status}
-                      onChange={(e) => setQuickEditData({ ...quickEditData, status: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    >
-                      <option value="PUBLISHED">Published</option>
-                      <option value="DRAFT">Draft</option>
-                      <option value="ARCHIVED">Archived</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select
-                      value={quickEditData.categoryId}
-                      onChange={(e) => setQuickEditData({ ...quickEditData, categoryId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    >
-                      <option value="">No Category</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Product Details Section */}
-              <div>
-                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Product Details</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                    <input
-                      type="text"
-                      value={quickEditData.brand}
-                      onChange={(e) => setQuickEditData({ ...quickEditData, brand: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Age Range</label>
-                    <input
-                      type="text"
-                      value={quickEditData.ageRange}
-                      onChange={(e) => setQuickEditData({ ...quickEditData, ageRange: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="e.g., 0-6 months, 1-3 years"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Ingredients</label>
                     <textarea
                       value={quickEditData.ingredients}
@@ -655,20 +676,10 @@ export default function AdminProductsPage() {
                   </div>
                 </div>
               </div>
-
-              {/* Images Section */}
-              <div>
-                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Images</h4>
-                <ImageUploader
-                  images={quickEditData.images}
-                  onChange={(urls) => setQuickEditData({ ...quickEditData, images: urls })}
-                  maxImages={10}
-                />
-              </div>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 p-4 border-t bg-gray-50 sticky bottom-0">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50 flex-shrink-0">
               <button
                 onClick={closeQuickView}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800"
