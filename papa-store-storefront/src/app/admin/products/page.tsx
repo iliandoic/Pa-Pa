@@ -169,7 +169,7 @@ export default function AdminProductsPage() {
                     {product.supplierSku}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-800">
-                    {product.price.toFixed(2)} лв
+                    {product.price.toFixed(2)} €
                   </td>
                   <td className="px-6 py-4">
                     <span

@@ -27,7 +27,10 @@
       "Bash(tasklist:*)",
       "Bash(curl:*)",
       "Bash(cat:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(npm run dev:*)"
     ]
   }
 }

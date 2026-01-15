@@ -38,7 +38,7 @@ export const listRegions = async () => {
         {
           id: "reg_bg",
           name: "Bulgaria",
-          currency_code: "BGN",
+          currency_code: "EUR",
           tax_rate: 20,
           countries: [
             { iso_2: "bg", name: "Bulgaria", display_name: "Bulgaria" },

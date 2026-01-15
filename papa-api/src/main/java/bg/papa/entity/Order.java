@@ -62,7 +62,7 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
-    // Totals (all in BGN)
+    // Totals (all in EUR)
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal subtotal;
 

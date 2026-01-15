@@ -61,3 +61,11 @@ app:
   sync:
     scheduled:
       enabled: ${SYNC_SCHEDULED_ENABLED:true}  # Enable scheduled sync in production
+
+# Cloudflare R2 Configuration
+r2:
+  endpoint: ${R2_ENDPOINT:https://4ecea583e1e35e9d264c07926c8e5764.r2.cloudflarestorage.com}
+  access-key: ${R2_ACCESS_KEY:df8298001ab5de8171502757c023a5e8}
+  secret-key: ${R2_SECRET_KEY:a663a1c20b35e227aab39f92732daafb1d1886b6316bff3a7942c1c79e7a370d}
+  bucket: ${R2_BUCKET:pa-pa}
+  public-url: ${R2_PUBLIC_URL:https://pub-f7c1cb5b771240dd8050d141462583ba.r2.dev}

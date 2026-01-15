@@ -31,6 +31,23 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
                                  @Param("status") ProductStatus status,
                                  Pageable pageable);
 
+    @Query("SELECT p FROM Product p WHERE " +
+           "LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.supplierSku) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.brand) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "ORDER BY CASE WHEN LOWER(p.supplierSku) LIKE LOWER(CONCAT('%', :search, '%')) THEN 0 ELSE 1 END, p.createdAt DESC")
+    Page<Product> searchAllFields(@Param("search") String search, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.status = :status AND (" +
+           "LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.supplierSku) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(p.brand) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "ORDER BY CASE WHEN LOWER(p.supplierSku) LIKE LOWER(CONCAT('%', :search, '%')) THEN 0 ELSE 1 END, p.createdAt DESC")
+    Page<Product> searchAllFieldsWithStatus(@Param("search") String search,
+                                            @Param("status") ProductStatus status,
+                                            Pageable pageable);
+
+
     @Query("SELECT p FROM Product p WHERE p.supplierSku IS NOT NULL")
     List<Product> findProductsForSync();
 
