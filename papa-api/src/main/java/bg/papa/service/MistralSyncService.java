@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +21,10 @@ public class MistralSyncService {
 
     private final MistralApiClient mistralApiClient;
     private final ProductRepository productRepository;
+
+    public ProductRepository getProductRepository() {
+        return productRepository;
+    }
 
     /**
      * Syncs a single product by Mistral code
@@ -64,6 +68,39 @@ public class MistralSyncService {
         }
 
         log.info("Sync completed: {} created, {} updated, {} errors", created, updated, errors);
+        return new SyncResult(created, updated, errors, mistralProducts.size());
+    }
+
+    /**
+     * Syncs products by row range using GetAllDataByPart endpoint
+     * Much faster than syncing by code
+     */
+    @Transactional
+    public SyncResult syncProductsByRowRange(int fromRow, int toRow) {
+        log.info("Starting sync for row range {}-{}", fromRow, toRow);
+
+        List<MistralProductDto> mistralProducts = mistralApiClient.fetchProductsByRowRange(fromRow, toRow);
+
+        int created = 0;
+        int updated = 0;
+        int errors = 0;
+
+        for (MistralProductDto mistralProduct : mistralProducts) {
+            try {
+                Product product = syncProduct(mistralProduct);
+                if (product.getCreatedAt() != null &&
+                    product.getCreatedAt().isAfter(LocalDateTime.now().minusSeconds(5))) {
+                    created++;
+                } else {
+                    updated++;
+                }
+            } catch (Exception e) {
+                log.error("Error syncing product {}: {}", mistralProduct.getCode(), e.getMessage());
+                errors++;
+            }
+        }
+
+        log.info("Row sync completed: {} created, {} updated, {} errors", created, updated, errors);
         return new SyncResult(created, updated, errors, mistralProducts.size());
     }
 
@@ -241,7 +278,166 @@ public class MistralSyncService {
     }
 
     /**
+     * FAST batch stock sync - fetches all Mistral products and updates stock in batches
+     * Much faster than individual API calls per product
+     */
+    @Transactional
+    public SyncResult syncStockBatch() {
+        log.info("Starting fast batch stock sync");
+        long startTime = System.currentTimeMillis();
+
+        // Get all supplier SKUs we have in our database
+        List<String> ourSkus = productRepository.findAllSupplierSkus();
+        Set<String> ourSkuSet = new HashSet<>(ourSkus);
+        log.info("Found {} products in our database to update", ourSkus.size());
+
+        int updated = 0;
+        int errors = 0;
+        int batchSize = 1000;
+        int fromRow = 1;
+
+        // Fetch all products from Mistral in batches and update stock
+        while (true) {
+            try {
+                List<MistralProductDto> mistralProducts = mistralApiClient.fetchProductsByRowRange(fromRow, fromRow + batchSize - 1);
+
+                if (mistralProducts.isEmpty()) {
+                    break; // No more products
+                }
+
+                // Update stock for products we have
+                for (MistralProductDto mp : mistralProducts) {
+                    if (ourSkuSet.contains(mp.getCode())) {
+                        try {
+                            int rowsUpdated = productRepository.updateStockBySupplierSku(mp.getCode(), mp.getQttyAsInteger());
+                            if (rowsUpdated > 0) {
+                                updated++;
+                            }
+                        } catch (Exception e) {
+                            log.error("Error updating stock for {}: {}", mp.getCode(), e.getMessage());
+                            errors++;
+                        }
+                    }
+                }
+
+                log.info("Processed rows {}-{}, updated {} so far", fromRow, fromRow + mistralProducts.size() - 1, updated);
+                fromRow += batchSize;
+
+                // Safety limit - don't process more than 50k products
+                if (fromRow > 50000) {
+                    log.warn("Reached safety limit of 50000 rows");
+                    break;
+                }
+
+            } catch (Exception e) {
+                log.error("Error fetching batch starting at row {}: {}", fromRow, e.getMessage());
+                errors++;
+                fromRow += batchSize; // Skip this batch and continue
+            }
+        }
+
+        long duration = System.currentTimeMillis() - startTime;
+        log.info("Batch stock sync completed in {}ms: {} updated, {} errors", duration, updated, errors);
+        return new SyncResult(0, updated, errors, updated + errors);
+    }
+
+    /**
+     * Real-time stock check for specific products (for cart/checkout validation)
+     * Returns current stock levels directly from Mistral
+     */
+    public Map<String, StockInfo> checkStockRealTime(List<String> supplierSkus) {
+        log.info("Real-time stock check for {} products", supplierSkus.size());
+        Map<String, StockInfo> result = new HashMap<>();
+        long totalApiTime = 0;
+
+        for (String sku : supplierSkus) {
+            try {
+                long apiStart = System.currentTimeMillis();
+                MistralProductDto product = mistralApiClient.fetchProductByCode(sku);
+                totalApiTime += System.currentTimeMillis() - apiStart;
+
+                if (product != null) {
+                    result.put(sku, new StockInfo(
+                            sku,
+                            product.getQttyAsInteger(),
+                            product.getQttyAsInteger() > 0,
+                            product.getSalesPriceAsBigDecimal()
+                    ));
+                } else {
+                    result.put(sku, new StockInfo(sku, 0, false, null));
+                }
+            } catch (Exception e) {
+                log.error("Error checking stock for {}: {}", sku, e.getMessage());
+                result.put(sku, new StockInfo(sku, null, false, null));
+            }
+        }
+
+        log.info("Real-time stock check completed. Total Mistral API time: {}ms for {} items (avg {}ms/item)",
+                totalApiTime, supplierSkus.size(), supplierSkus.isEmpty() ? 0 : totalApiTime / supplierSkus.size());
+
+        return result;
+    }
+
+    /**
+     * Validate cart items - checks if requested quantities are available
+     */
+    public CartValidationResult validateCart(List<CartItemCheck> items) {
+        log.info("Validating cart with {} items", items.size());
+
+        List<String> skus = items.stream().map(CartItemCheck::supplierSku).toList();
+        Map<String, StockInfo> stockInfo = checkStockRealTime(skus);
+
+        List<CartItemValidation> validations = new ArrayList<>();
+        boolean allAvailable = true;
+
+        for (CartItemCheck item : items) {
+            StockInfo stock = stockInfo.get(item.supplierSku());
+            boolean available = stock != null && stock.quantity() != null && stock.quantity() >= item.requestedQuantity();
+
+            if (!available) {
+                allAvailable = false;
+            }
+
+            validations.add(new CartItemValidation(
+                    item.supplierSku(),
+                    item.requestedQuantity(),
+                    stock != null ? stock.quantity() : 0,
+                    available,
+                    stock != null ? stock.currentPrice() : null
+            ));
+        }
+
+        return new CartValidationResult(allAvailable, validations);
+    }
+
+    /**
      * Result of a sync operation
      */
     public record SyncResult(int created, int updated, int errors, int total) {}
+
+    /**
+     * Stock information for a single product
+     */
+    public record StockInfo(String supplierSku, Integer quantity, boolean inStock, BigDecimal currentPrice) {}
+
+    /**
+     * Item to check in cart validation
+     */
+    public record CartItemCheck(String supplierSku, int requestedQuantity) {}
+
+    /**
+     * Validation result for a single cart item
+     */
+    public record CartItemValidation(
+            String supplierSku,
+            int requestedQuantity,
+            int availableQuantity,
+            boolean available,
+            BigDecimal currentPrice
+    ) {}
+
+    /**
+     * Full cart validation result
+     */
+    public record CartValidationResult(boolean allAvailable, List<CartItemValidation> items) {}
 }

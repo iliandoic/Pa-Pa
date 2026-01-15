@@ -110,6 +110,45 @@ public class MistralApiClient {
     }
 
     /**
+     * Fetches products by row range using getAllDataByPart endpoint
+     * Much faster than fetching by code one-by-one
+     */
+    public List<MistralProductDto> fetchProductsByRowRange(int fromRow, int toRow) {
+        String token = authenticate();
+
+        String url = UriComponentsBuilder.fromHttpUrl(mistralConfig.getBaseUrl() + "/api/GetAllDataByPart")
+                .queryParam("locationid", mistralConfig.getLocationId())
+                .queryParam("priceid", mistralConfig.getPriceId())
+                .queryParam("row", fromRow)
+                .queryParam("torow", toRow)
+                .toUriString();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<List<MistralProductDto>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    new ParameterizedTypeReference<List<MistralProductDto>>() {}
+            );
+
+            List<MistralProductDto> products = response.getBody();
+            log.info("Fetched {} products from Mistral for rows {}-{}",
+                    products != null ? products.size() : 0, fromRow, toRow);
+            return products != null ? products : Collections.emptyList();
+
+        } catch (Exception e) {
+            log.error("Failed to fetch products from Mistral: {}", e.getMessage());
+            throw new RuntimeException("Failed to fetch products from Mistral", e);
+        }
+    }
+
+    /**
      * Fetches a single product by code
      */
     public MistralProductDto fetchProductByCode(String code) {

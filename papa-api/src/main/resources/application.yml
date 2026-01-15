@@ -55,3 +55,9 @@ mistral:
     password: ${MISTRAL_PASSWORD:640270}
     location-id: ${MISTRAL_LOCATION_ID:5}
     price-id: ${MISTRAL_PRICE_ID:1}
+
+# App Configuration
+app:
+  sync:
+    scheduled:
+      enabled: ${SYNC_SCHEDULED_ENABLED:true}  # Enable scheduled sync in production

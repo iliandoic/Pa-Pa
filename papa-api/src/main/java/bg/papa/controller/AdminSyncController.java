@@ -101,6 +101,36 @@ public class AdminSyncController {
         }
     }
 
+    @PostMapping("/products/rows")
+    @Operation(summary = "Sync products by row range (uses GetAllDataByPart - much faster, 1-indexed)")
+    public ResponseEntity<Map<String, Object>> syncProductRows(
+            @RequestParam(defaultValue = "1") int fromRow,
+            @RequestParam(defaultValue = "1000") int toRow) {
+
+        if (toRow - fromRow > 5000) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Range too large. Maximum 5000 rows at a time."
+            ));
+        }
+
+        try {
+            var result = mistralSyncService.syncProductsByRowRange(fromRow, toRow);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "created", result.created(),
+                    "updated", result.updated(),
+                    "errors", result.errors(),
+                    "total", result.total()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
     @PostMapping("/products/all")
     @Operation(summary = "Bulk sync all products from Mistral (searches 0-9)")
     public ResponseEntity<Map<String, Object>> syncAllProducts() {
@@ -122,7 +152,7 @@ public class AdminSyncController {
     }
 
     @PostMapping("/stock")
-    @Operation(summary = "Sync stock quantities only for existing products")
+    @Operation(summary = "Sync stock quantities only for existing products (slow - individual API calls)")
     public ResponseEntity<Map<String, Object>> syncStock() {
         try {
             var result = mistralSyncService.syncStockOnly();
@@ -138,5 +168,68 @@ public class AdminSyncController {
                     "message", e.getMessage()
             ));
         }
+    }
+
+    @PostMapping("/stock/batch")
+    @Operation(summary = "Fast batch stock sync - updates all products from Mistral in batches")
+    public ResponseEntity<Map<String, Object>> syncStockBatch() {
+        try {
+            long startTime = System.currentTimeMillis();
+            var result = mistralSyncService.syncStockBatch();
+            long duration = System.currentTimeMillis() - startTime;
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "updated", result.updated(),
+                    "errors", result.errors(),
+                    "total", result.total(),
+                    "durationMs", duration,
+                    "avgMsPerProduct", result.updated() > 0 ? duration / result.updated() : 0
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    @GetMapping("/benchmark")
+    @Operation(summary = "Benchmark to identify bottlenecks - tests API, DB read, and DB write speeds")
+    public ResponseEntity<Map<String, Object>> benchmark() {
+        Map<String, Object> results = new java.util.LinkedHashMap<>();
+
+        // Test 1: Mistral API speed
+        long apiStart = System.currentTimeMillis();
+        try {
+            mistralApiClient.fetchProductsByRowRange(1, 100);
+            results.put("mistralApi100Products", System.currentTimeMillis() - apiStart + "ms");
+        } catch (Exception e) {
+            results.put("mistralApi100Products", "ERROR: " + e.getMessage());
+        }
+
+        // Test 2: Database read speed
+        long dbReadStart = System.currentTimeMillis();
+        try {
+            var skus = mistralSyncService.getProductRepository().findAllSupplierSkus();
+            results.put("dbReadAllSkus", System.currentTimeMillis() - dbReadStart + "ms (" + skus.size() + " skus)");
+        } catch (Exception e) {
+            results.put("dbReadAllSkus", "ERROR: " + e.getMessage());
+        }
+
+        // Test 3: Database single write speed
+        long dbWriteStart = System.currentTimeMillis();
+        try {
+            // Just do a no-op update to test write latency
+            mistralSyncService.getProductRepository().updateStockBySupplierSku("BENCHMARK_TEST_SKU", 0);
+            results.put("dbSingleWrite", System.currentTimeMillis() - dbWriteStart + "ms");
+        } catch (Exception e) {
+            results.put("dbSingleWrite", "ERROR: " + e.getMessage());
+        }
+
+        // Summary
+        results.put("summary", "Check which operation takes longest to identify bottleneck");
+
+        return ResponseEntity.ok(results);
     }
 }

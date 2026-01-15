@@ -59,6 +59,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/shipping/calculate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/shipping/*/offices").permitAll()
 
+                // Stock check (public for cart validation)
+                .requestMatchers("/api/stock/**").permitAll()
+
                 // Admin endpoints (temporarily public for development)
                 .requestMatchers("/api/admin/**").permitAll()
 

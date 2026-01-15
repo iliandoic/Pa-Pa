@@ -40,4 +40,11 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     @Query("UPDATE Product p SET p.status = :newStatus WHERE p.status = :oldStatus")
     int updateStatusByStatus(@Param("newStatus") ProductStatus newStatus,
                              @Param("oldStatus") ProductStatus oldStatus);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Product p SET p.stock = :stock WHERE p.supplierSku = :supplierSku")
+    int updateStockBySupplierSku(@Param("supplierSku") String supplierSku, @Param("stock") Integer stock);
+
+    @Query("SELECT p.supplierSku FROM Product p WHERE p.supplierSku IS NOT NULL")
+    List<String> findAllSupplierSkus();
 }
