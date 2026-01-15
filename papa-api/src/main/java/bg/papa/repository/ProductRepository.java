@@ -35,4 +35,9 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     List<Product> findProductsForSync();
 
     List<Product> findBySupplierSkuIn(List<String> supplierSkus);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Product p SET p.status = :newStatus WHERE p.status = :oldStatus")
+    int updateStatusByStatus(@Param("newStatus") ProductStatus newStatus,
+                             @Param("oldStatus") ProductStatus oldStatus);
 }
