@@ -98,6 +98,15 @@ export async function publishAllProducts(): Promise<{ updated: number }> {
   return res.json()
 }
 
+export async function updateProductTitle(id: string, title: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title }),
+  })
+  if (!res.ok) throw new Error('Failed to update title')
+}
+
 // Sync API
 export async function syncProducts(startCode: number, endCode: number): Promise<{
   created: number
