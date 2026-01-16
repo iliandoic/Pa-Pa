@@ -71,15 +71,16 @@ public class EnrichmentService {
             }
 
             // 2. If no good barcode match, search by product name
-            if (bestScore < 0.8 && product.getSupplierTitle() != null) {
-                ScrapedProductData data = searchByName(product.getSupplierTitle());
+            String searchName = product.getSupplierTitle() != null ? product.getSupplierTitle() : product.getTitle();
+            if (bestScore < 0.8 && searchName != null && !searchName.isEmpty()) {
+                ScrapedProductData data = searchByName(searchName);
                 if (data != null && data.getMatchScore() > bestScore) {
                     bestMatch = data;
                     bestScore = data.getMatchScore();
                 }
             }
 
-            if (bestMatch != null && bestScore >= 0.5) {
+            if (bestMatch != null && bestScore >= 0.1) {
                 // Apply enrichment data
                 applyEnrichmentData(product, bestMatch);
 
@@ -181,6 +182,7 @@ public class EnrichmentService {
     private ScrapedProductData searchEmagByName(String query) {
         try {
             String url = "https://www.emag.bg/search/" + URLEncoder.encode(query, StandardCharsets.UTF_8);
+            log.debug("Searching eMag: {}", url);
             Document doc = Jsoup.connect(url)
                     .userAgent(USER_AGENT)
                     .timeout(10000)
@@ -188,7 +190,11 @@ public class EnrichmentService {
 
             Element productCard = doc.selectFirst(".card-v2-wrapper");
             if (productCard != null) {
-                return scrapeEmagProduct(productCard, query);
+                ScrapedProductData result = scrapeEmagProduct(productCard, query);
+                log.info("eMag found: '{}' with score {}", result.getTitle(), result.getMatchScore());
+                return result;
+            } else {
+                log.debug("eMag: No product card found for query: {}", query);
             }
 
         } catch (IOException e) {
@@ -205,10 +211,15 @@ public class EnrichmentService {
         data.setSource("emag.bg");
 
         // Get product link and title
-        Element titleLink = card.selectFirst(".card-v2-title a");
+        Element titleLink = card.selectFirst("a.card-v2-title");
         if (titleLink != null) {
             data.setTitle(titleLink.text().trim());
-            data.setSourceUrl("https://www.emag.bg" + titleLink.attr("href"));
+            String href = titleLink.attr("href");
+            if (href.startsWith("http")) {
+                data.setSourceUrl(href);
+            } else {
+                data.setSourceUrl("https://www.emag.bg" + href);
+            }
         }
 
         // Get image
@@ -479,11 +490,21 @@ public class EnrichmentService {
     private String cleanSearchQuery(String query) {
         if (query == null) return "";
 
-        // Remove common suffixes like unit counts, sizes
-        return query
-                .replaceAll("\\d+\\s*(бр|мл|гр|кг|л)\\.*", "")
+        // Remove product codes like "080/26", "0526.001"
+        String cleaned = query
+                .replaceAll("\\d{3,}/\\d+", "")  // Remove codes like 080/26
+                .replaceAll("\\d{4}\\.\\d+", "") // Remove codes like 0526.001
+                .replaceAll("\\d+\\s*(бр|мл|гр|кг|л|м)\\.*", "") // Remove quantities
+                .replaceAll(",\\s*$", "") // Remove trailing commas
                 .replaceAll("\\s+", " ")
                 .trim();
+
+        // Extract brand and product type for better search
+        // "Авент 080/26 Залъгалки Ultra Air" -> "Avent Залъгалки Ultra Air"
+        cleaned = cleaned.replace("Авент", "Philips Avent").replace("авент", "Philips Avent");
+
+        log.debug("Cleaned search query: '{}' -> '{}'", query, cleaned);
+        return cleaned;
     }
 
     /**
