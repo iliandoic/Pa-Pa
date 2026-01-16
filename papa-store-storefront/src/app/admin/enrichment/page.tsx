@@ -299,17 +299,31 @@ export default function EnrichmentPage() {
                   <div className="flex items-start gap-4">
                     {/* Thumbnail */}
                     <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      {product.thumbnail ? (
-                        <img
-                          src={product.thumbnail}
-                          alt={product.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          No image
-                        </div>
-                      )}
+                      {(() => {
+                        try {
+                          const images = typeof product.images === 'string'
+                            ? JSON.parse(product.images)
+                            : product.images;
+                          const thumbnail = Array.isArray(images) && images.length > 0 ? images[0] : null;
+                          return thumbnail ? (
+                            <img
+                              src={thumbnail}
+                              alt={product.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                              No image
+                            </div>
+                          );
+                        } catch {
+                          return (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                              No image
+                            </div>
+                          );
+                        }
+                      })()}
                     </div>
 
                     {/* Info */}
@@ -318,7 +332,16 @@ export default function EnrichmentPage() {
                         <div>
                           <h4 className="font-medium text-gray-800 truncate">{product.title}</h4>
                           <p className="text-sm text-gray-500">
-                            SKU: {product.supplierSku || '-'} | Barcode: {product.barcodes?.join(', ') || '-'}
+                            SKU: {product.supplierSku || '-'} | Barcode: {
+                              (() => {
+                                try {
+                                  const barcodes = typeof product.barcodes === 'string'
+                                    ? JSON.parse(product.barcodes)
+                                    : product.barcodes;
+                                  return Array.isArray(barcodes) ? barcodes.join(', ') : '-';
+                                } catch { return '-'; }
+                              })()
+                            }
                           </p>
                           {product.enrichmentSource && (
                             <p className="text-xs text-gray-400 mt-1">
