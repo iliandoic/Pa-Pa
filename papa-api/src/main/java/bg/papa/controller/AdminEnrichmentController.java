@@ -150,21 +150,15 @@ public class AdminEnrichmentController {
 
     @PatchMapping("/bulk-approve")
     @Operation(summary = "Bulk approve high-confidence products")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Map<String, Object>> bulkApprove(
             @RequestParam(defaultValue = "0.9") double minConfidence) {
 
-        List<Product> products = productRepository.findAll().stream()
-                .filter(p -> p.getEnrichmentMatchScore() != null)
-                .filter(p -> p.getEnrichmentMatchScore() >= minConfidence)
-                .filter(p -> p.getStatus() == ProductStatus.DRAFT)
-                .toList();
+        // Bulk update in single SQL query - much more efficient than loading all products
+        int approved = productRepository.bulkApproveHighConfidence(
+                minConfidence, ProductStatus.DRAFT, ProductStatus.PUBLISHED);
 
-        int approved = 0;
-        for (Product product : products) {
-            product.setStatus(ProductStatus.PUBLISHED);
-            productRepository.save(product);
-            approved++;
-        }
+        log.info("Bulk approved {} products with confidence >= {}", approved, minConfidence);
 
         return ResponseEntity.ok(Map.of(
                 "approved", approved,

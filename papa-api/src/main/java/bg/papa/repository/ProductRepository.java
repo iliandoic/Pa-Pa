@@ -81,4 +81,10 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     long countByEnrichmentMatchScoreIsNotNull();
 
     long countByEnrichmentMatchScoreGreaterThanEqual(Double score);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Product p SET p.status = :newStatus WHERE p.enrichmentMatchScore >= :minScore AND p.status = :currentStatus")
+    int bulkApproveHighConfidence(@Param("minScore") Double minScore,
+                                  @Param("currentStatus") ProductStatus currentStatus,
+                                  @Param("newStatus") ProductStatus newStatus);
 }
