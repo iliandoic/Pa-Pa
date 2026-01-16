@@ -27,7 +27,8 @@ public class ProductResponse {
     private String brand;
     private String ingredients;
     private String ageRange;
-    private Double matchScore;
+    private Double enrichmentMatchScore;
+    private String enrichmentSource;
     private Integer stock;
     private BigDecimal weight;
     private UUID categoryId;
@@ -71,7 +72,8 @@ public class ProductResponse {
                 .brand(product.getBrand())
                 .ingredients(product.getIngredients())
                 .ageRange(product.getAgeRange())
-                .matchScore(product.getMatchScore())
+                .enrichmentMatchScore(product.getEnrichmentMatchScore())
+                .enrichmentSource(product.getEnrichmentSource())
                 .stock(product.getStock())
                 .weight(product.getWeight())
                 .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)

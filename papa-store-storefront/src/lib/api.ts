@@ -15,7 +15,8 @@ export interface Product {
   brand: string | null
   ingredients: string | null
   ageRange: string | null
-  matchScore: number | null
+  enrichmentMatchScore: number | null
+  enrichmentSource: string | null
   stock: number
   weight: number | null
   categoryId: string | null

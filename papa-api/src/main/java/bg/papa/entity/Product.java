@@ -69,8 +69,11 @@ public class Product {
     @Column(name = "age_range")
     private String ageRange;
 
-    @Column(name = "match_score")
-    private Double matchScore;
+    @Column(name = "enrichment_match_score")
+    private Double enrichmentMatchScore;
+
+    @Column(name = "enrichment_source")
+    private String enrichmentSource; // e.g., "gladen.bg", "dm.bg", "emag.bg"
 
     // Status
     @Enumerated(EnumType.STRING)
