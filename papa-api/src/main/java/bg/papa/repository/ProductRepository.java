@@ -70,4 +70,15 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     @org.springframework.data.jpa.repository.Modifying
     @Query("DELETE FROM Product p WHERE p.barcodes IS NULL")
     int deleteByBarcodesIsNull();
+
+    // Enrichment queries
+    Page<Product> findByEnrichmentMatchScoreIsNullAndStatusOrderByCreatedAtAsc(ProductStatus status, Pageable pageable);
+
+    Page<Product> findByEnrichmentMatchScoreIsNotNullAndStatusOrderByEnrichmentMatchScoreDesc(ProductStatus status, Pageable pageable);
+
+    long countByEnrichmentMatchScoreIsNull();
+
+    long countByEnrichmentMatchScoreIsNotNull();
+
+    long countByEnrichmentMatchScoreGreaterThanEqual(Double score);
 }

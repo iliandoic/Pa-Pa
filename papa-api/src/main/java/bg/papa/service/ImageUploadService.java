@@ -92,6 +92,38 @@ public class ImageUploadService {
     }
 
     /**
+     * Upload image from raw bytes (for enrichment service)
+     */
+    public String uploadImageBytes(byte[] imageBytes, String filename) throws IOException {
+        BufferedImage originalImage = ImageIO.read(new java.io.ByteArrayInputStream(imageBytes));
+        if (originalImage == null) {
+            throw new IOException("Could not read image bytes");
+        }
+
+        // Optimize image
+        byte[] optimizedImage = optimizeImage(originalImage);
+
+        // Generate key
+        String key = "products/" + filename;
+
+        log.info("Uploading enrichment image: {} ({} KB -> {} KB)",
+                key, imageBytes.length / 1024, optimizedImage.length / 1024);
+
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(r2Config.getBucket())
+                .key(key)
+                .contentType("image/jpeg")
+                .build();
+
+        s3Client.putObject(request, RequestBody.fromBytes(optimizedImage));
+
+        String publicUrl = r2Config.getPublicUrl() + "/" + key;
+        log.info("Enrichment image uploaded: {}", publicUrl);
+
+        return publicUrl;
+    }
+
+    /**
      * Delete an image from R2 storage
      */
     public void deleteImage(String imageUrl) {
