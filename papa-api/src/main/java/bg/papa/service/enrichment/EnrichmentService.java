@@ -106,17 +106,24 @@ public class EnrichmentService {
 
     /**
      * Search for product by barcode on Bulgarian e-commerce sites
+     * Barcode matches are high confidence (0.95) since barcodes are unique identifiers
      */
     private ScrapedProductData searchByBarcode(String barcode) {
         log.debug("Searching by barcode: {}", barcode);
 
         // Try eMag.bg
         ScrapedProductData result = searchEmagByBarcode(barcode);
-        if (result != null) return result;
+        if (result != null && result.getTitle() != null) {
+            result.setMatchScore(0.95); // Barcode match = high confidence
+            return result;
+        }
 
         // Try Gladen.bg
         result = searchGladenByBarcode(barcode);
-        if (result != null) return result;
+        if (result != null && result.getTitle() != null) {
+            result.setMatchScore(0.95); // Barcode match = high confidence
+            return result;
+        }
 
         return null;
     }
@@ -423,6 +430,12 @@ public class EnrichmentService {
      */
     private String downloadAndUploadImage(String imageUrl, String productSku) {
         try {
+            // Validate image URL
+            if (imageUrl == null || imageUrl.isEmpty() || !imageUrl.startsWith("http")) {
+                log.warn("Invalid image URL: {}", imageUrl);
+                return null;
+            }
+
             // Download image bytes
             byte[] imageBytes = Jsoup.connect(imageUrl)
                     .userAgent(USER_AGENT)
@@ -432,7 +445,8 @@ public class EnrichmentService {
                     .bodyAsBytes();
 
             // Upload to R2 via ImageUploadService
-            String filename = productSku + "-" + UUID.randomUUID().toString().substring(0, 8) + ".jpg";
+            String skuPart = (productSku != null && !productSku.isEmpty()) ? productSku : "product";
+            String filename = skuPart + "-" + UUID.randomUUID().toString().substring(0, 8) + ".jpg";
             return imageUploadService.uploadImageBytes(imageBytes, filename);
 
         } catch (Exception e) {
@@ -489,8 +503,9 @@ public class EnrichmentService {
 
     /**
      * Bulk enrich products
+     * Note: No @Transactional here - each product is enriched in its own transaction
+     * to avoid holding DB connections during rate-limiting delays
      */
-    @Transactional
     public List<EnrichmentResult> enrichProducts(List<UUID> productIds) {
         List<EnrichmentResult> results = new ArrayList<>();
         for (UUID id : productIds) {
