@@ -123,3 +123,87 @@ export async function syncProducts(startCode: number, endCode: number): Promise<
   if (!res.ok) throw new Error('Failed to sync products')
   return res.json()
 }
+
+// Enrichment API
+export interface EnrichmentStats {
+  total: number
+  enriched: number
+  notEnriched: number
+  highConfidence: number
+  withBarcodes: number
+  enrichmentProgress: number
+}
+
+export interface EnrichmentResult {
+  productId: string
+  supplierSku: string | null
+  success: boolean
+  message: string
+  matchScore: number | null
+  source: string | null
+  enrichedTitle: string | null
+}
+
+export async function getEnrichmentStats(): Promise<EnrichmentStats> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/enrichment/stats`)
+  if (!res.ok) throw new Error('Failed to fetch enrichment stats')
+  return res.json()
+}
+
+export async function getEnrichmentQueue(page = 0, size = 20): Promise<PageResponse<Product>> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/enrichment/queue?page=${page}&size=${size}`)
+  if (!res.ok) throw new Error('Failed to fetch enrichment queue')
+  return res.json()
+}
+
+export async function getEnrichedProducts(page = 0, size = 20): Promise<PageResponse<Product>> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/enrichment/enriched?page=${page}&size=${size}`)
+  if (!res.ok) throw new Error('Failed to fetch enriched products')
+  return res.json()
+}
+
+export async function enrichProduct(productId: string): Promise<EnrichmentResult> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/enrichment/enrich/${productId}`, {
+    method: 'POST',
+  })
+  if (!res.ok) throw new Error('Failed to enrich product')
+  return res.json()
+}
+
+export async function enrichNextProducts(count = 10): Promise<{
+  processed: number
+  successful: number
+  failed: number
+  results: EnrichmentResult[]
+}> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/enrichment/enrich-next?count=${count}`, {
+    method: 'POST',
+  })
+  if (!res.ok) throw new Error('Failed to enrich products')
+  return res.json()
+}
+
+export async function approveProduct(productId: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/enrichment/${productId}/approve`, {
+    method: 'PATCH',
+  })
+  if (!res.ok) throw new Error('Failed to approve product')
+}
+
+export async function rejectProduct(productId: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/enrichment/${productId}/reject`, {
+    method: 'PATCH',
+  })
+  if (!res.ok) throw new Error('Failed to reject product')
+}
+
+export async function bulkApproveProducts(minConfidence = 0.9): Promise<{
+  approved: number
+  minConfidence: number
+}> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/enrichment/bulk-approve?minConfidence=${minConfidence}`, {
+    method: 'PATCH',
+  })
+  if (!res.ok) throw new Error('Failed to bulk approve products')
+  return res.json()
+}

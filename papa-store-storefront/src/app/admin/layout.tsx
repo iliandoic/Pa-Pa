@@ -9,6 +9,7 @@ const navItems = [
   { href: '/admin/categories', label: 'Categories', icon: '📁' },
   { href: '/admin/sync', label: 'Sync', icon: '🔄' },
   { href: '/admin/barcode-sync', label: 'Barcode Sync', icon: '🏷️' },
+  { href: '/admin/enrichment', label: 'Enrichment', icon: '✨' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
