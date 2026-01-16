@@ -64,4 +64,10 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     @Query("SELECT p.supplierSku FROM Product p WHERE p.supplierSku IS NOT NULL")
     List<String> findAllSupplierSkus();
+
+    long countByBarcodesIsNotNull();
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM Product p WHERE p.barcodes IS NULL")
+    int deleteByBarcodesIsNull();
 }

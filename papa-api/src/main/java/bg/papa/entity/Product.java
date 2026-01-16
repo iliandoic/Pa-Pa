@@ -57,6 +57,9 @@ public class Product {
     @Column(name = "supplier_title")
     private String supplierTitle;
 
+    @Column(columnDefinition = "TEXT")
+    private String barcodes; // JSON array of barcodes, first is primary
+
     // Enrichment data
     private String brand;
 

@@ -504,9 +504,12 @@ export default function AdminProductsPage() {
             <div className="flex items-center justify-between px-6 py-4 border-b flex-shrink-0">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Edit Product</h3>
-                {quickViewProduct.supplierSku && (
-                  <p className="text-xs text-gray-400">SKU: {quickViewProduct.supplierSku}</p>
-                )}
+                <div className="flex gap-4 text-xs text-gray-400">
+                  {quickViewProduct.supplierSku && <span>SKU: {quickViewProduct.supplierSku}</span>}
+                  {quickViewProduct.barcodes?.length > 0 && (
+                    <span>Barcodes: {quickViewProduct.barcodes.length === 1 ? quickViewProduct.barcodes[0] : `${quickViewProduct.barcodes[0]} (+${quickViewProduct.barcodes.length - 1})`}</span>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <Link

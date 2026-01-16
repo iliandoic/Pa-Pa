@@ -2,8 +2,13 @@ spring:
   application:
     name: papa-api
 
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://shuttle.proxy.rlwy.net:35983/railway}
+    url: ${DATABASE_URL:jdbc:postgresql://shuttle.proxy.rlwy.net:35983/railway?reWriteBatchedInserts=true}
     username: ${DATABASE_USERNAME:postgres}
     password: ${DATABASE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
@@ -19,6 +24,10 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        jdbc:
+          batch_size: 100
+        order_inserts: true
+        order_updates: true
 
 server:
   port: ${PORT:8080}

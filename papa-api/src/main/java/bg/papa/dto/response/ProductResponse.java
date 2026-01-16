@@ -23,6 +23,7 @@ public class ProductResponse {
     private BigDecimal compareAtPrice;
     private String supplierSku;
     private String supplierTitle;
+    private List<String> barcodes;
     private String brand;
     private String ingredients;
     private String ageRange;
@@ -45,6 +46,14 @@ public class ProductResponse {
             }
         }
 
+        List<String> barcodeList = List.of();
+        if (product.getBarcodes() != null && !product.getBarcodes().isBlank()) {
+            String barcodes = product.getBarcodes().replace("[", "").replace("]", "").replace("\"", "");
+            if (!barcodes.isBlank()) {
+                barcodeList = List.of(barcodes.split(","));
+            }
+        }
+
         String thumbnail = imageList.isEmpty() ? null : imageList.get(0);
 
         return ProductResponse.builder()
@@ -58,6 +67,7 @@ public class ProductResponse {
                 .compareAtPrice(product.getCompareAtPrice())
                 .supplierSku(product.getSupplierSku())
                 .supplierTitle(product.getSupplierTitle())
+                .barcodes(barcodeList)
                 .brand(product.getBrand())
                 .ingredients(product.getIngredients())
                 .ageRange(product.getAgeRange())

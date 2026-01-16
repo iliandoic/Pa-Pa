@@ -11,6 +11,7 @@ export interface Product {
   compareAtPrice: number | null
   supplierSku: string | null
   supplierTitle: string | null
+  barcodes: string[]
   brand: string | null
   ingredients: string | null
   ageRange: string | null
