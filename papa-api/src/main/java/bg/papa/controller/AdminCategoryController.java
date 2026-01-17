@@ -10,9 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin/categories")
@@ -26,9 +25,22 @@ public class AdminCategoryController {
     @GetMapping
     @Operation(summary = "List all categories")
     public List<CategoryResponse> listCategories() {
-        return categoryRepository.findByParentIsNullOrderBySortOrderAsc()
-                .stream()
-                .map(this::toCategoryResponse)
+        // Fetch ALL categories in one query
+        List<Category> allCategories = categoryRepository.findAll();
+
+        // Get product counts per category in ONE query
+        Map<UUID, Long> productCounts = getProductCountsByCategory();
+
+        // Build children map
+        Map<UUID, List<Category>> childrenMap = allCategories.stream()
+                .filter(c -> c.getParent() != null)
+                .collect(Collectors.groupingBy(c -> c.getParent().getId()));
+
+        // Build tree from root categories
+        return allCategories.stream()
+                .filter(c -> c.getParent() == null)
+                .sorted(Comparator.comparingInt(c -> c.getSortOrder() != null ? c.getSortOrder() : 0))
+                .map(c -> toCategoryResponse(c, childrenMap, productCounts))
                 .toList();
     }
 
@@ -44,8 +56,16 @@ public class AdminCategoryController {
     @GetMapping("/{id}")
     @Operation(summary = "Get category by ID")
     public ResponseEntity<CategoryResponse> getCategory(@PathVariable UUID id) {
-        return categoryRepository.findById(id)
-                .map(this::toCategoryResponse)
+        List<Category> allCategories = categoryRepository.findAll();
+        Map<UUID, Long> productCounts = getProductCountsByCategory();
+        Map<UUID, List<Category>> childrenMap = allCategories.stream()
+                .filter(c -> c.getParent() != null)
+                .collect(Collectors.groupingBy(c -> c.getParent().getId()));
+
+        return allCategories.stream()
+                .filter(c -> c.getId().equals(id))
+                .findFirst()
+                .map(c -> toCategoryResponse(c, childrenMap, productCounts))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -56,7 +76,13 @@ public class AdminCategoryController {
     public ResponseEntity<CategoryResponse> createCategory(@RequestBody CategoryCreateRequest request) {
         Category category = new Category();
         category.setName(request.name());
-        category.setHandle(generateHandle(request.name()));
+        // Use provided handle if not empty, otherwise generate from name
+        String baseHandle = (request.handle() != null && !request.handle().isEmpty())
+                ? request.handle()
+                : generateHandle(request.name());
+        // Ensure handle is unique
+        String handle = ensureUniqueHandle(baseHandle);
+        category.setHandle(handle);
         category.setDescription(request.description());
         category.setThumbnail(request.thumbnail());
         category.setSortOrder(request.sortOrder() != null ? request.sortOrder() : 0);
@@ -67,7 +93,9 @@ public class AdminCategoryController {
         }
 
         Category saved = categoryRepository.save(category);
-        return ResponseEntity.ok(toCategoryResponse(saved));
+
+        Map<UUID, Long> productCounts = getProductCountsByCategory();
+        return ResponseEntity.ok(toCategoryResponse(saved, Map.of(), productCounts));
     }
 
     @PutMapping("/{id}")
@@ -104,7 +132,8 @@ public class AdminCategoryController {
                     }
 
                     Category saved = categoryRepository.save(category);
-                    return ResponseEntity.ok(toCategoryResponse(saved));
+                    Map<UUID, Long> productCounts = getProductCountsByCategory();
+                    return ResponseEntity.ok(toCategoryResponse(saved, Map.of(), productCounts));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -115,14 +144,8 @@ public class AdminCategoryController {
     public ResponseEntity<Map<String, Object>> deleteCategory(@PathVariable UUID id) {
         return categoryRepository.findById(id)
                 .map(category -> {
-                    // Remove category from all products first
-                    productRepository.findAll().stream()
-                            .filter(p -> p.getCategory() != null && p.getCategory().getId().equals(id))
-                            .forEach(p -> {
-                                p.setCategory(null);
-                                productRepository.save(p);
-                            });
-
+                    // Use efficient query to clear category from products
+                    productRepository.clearCategoryFromProducts(id);
                     categoryRepository.delete(category);
 
                     Map<String, Object> response = new java.util.HashMap<>();
@@ -138,8 +161,7 @@ public class AdminCategoryController {
     public ResponseEntity<List<ProductSimple>> getCategoryProducts(@PathVariable UUID id) {
         return categoryRepository.findById(id)
                 .map(category -> {
-                    List<ProductSimple> products = productRepository.findAll().stream()
-                            .filter(p -> p.getCategory() != null && p.getCategory().getId().equals(id))
+                    List<ProductSimple> products = productRepository.findByCategoryId(id).stream()
                             .map(p -> new ProductSimple(p.getId().toString(), p.getTitle(), p.getSupplierSku()))
                             .toList();
                     return ResponseEntity.ok(products);
@@ -147,14 +169,26 @@ public class AdminCategoryController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    private CategoryResponse toCategoryResponse(Category category) {
-        List<CategoryResponse> children = category.getChildren() != null
-                ? category.getChildren().stream().map(this::toCategoryResponse).toList()
-                : List.of();
+    private Map<UUID, Long> getProductCountsByCategory() {
+        // Get counts efficiently via database query
+        List<Object[]> counts = productRepository.countProductsByCategory();
+        Map<UUID, Long> result = new HashMap<>();
+        for (Object[] row : counts) {
+            if (row[0] != null) {
+                result.put((UUID) row[0], (Long) row[1]);
+            }
+        }
+        return result;
+    }
 
-        long productCount = productRepository.findAll().stream()
-                .filter(p -> p.getCategory() != null && p.getCategory().getId().equals(category.getId()))
-                .count();
+    private CategoryResponse toCategoryResponse(Category category, Map<UUID, List<Category>> childrenMap, Map<UUID, Long> productCounts) {
+        List<CategoryResponse> children = childrenMap.getOrDefault(category.getId(), List.of())
+                .stream()
+                .sorted(Comparator.comparingInt(c -> c.getSortOrder() != null ? c.getSortOrder() : 0))
+                .map(c -> toCategoryResponse(c, childrenMap, productCounts))
+                .toList();
+
+        long productCount = productCounts.getOrDefault(category.getId(), 0L);
 
         return new CategoryResponse(
                 category.getId().toString(),
@@ -169,15 +203,50 @@ public class AdminCategoryController {
         );
     }
 
+    private String ensureUniqueHandle(String baseHandle) {
+        String handle = baseHandle;
+        int suffix = 1;
+        while (categoryRepository.findByHandle(handle).isPresent()) {
+            handle = baseHandle + "-" + suffix;
+            suffix++;
+        }
+        return handle;
+    }
+
     private String generateHandle(String name) {
         if (name == null || name.isEmpty()) {
             return "category-" + System.currentTimeMillis();
         }
-        return name.toLowerCase()
+        // Transliterate Bulgarian to Latin
+        String transliterated = transliterateBulgarian(name.toLowerCase());
+        String handle = transliterated
                 .replaceAll("[^a-z0-9\\s-]", "")
                 .replaceAll("\\s+", "-")
                 .replaceAll("-+", "-")
                 .replaceAll("^-|-$", "");
+        // If handle is empty after processing, generate a unique one
+        if (handle.isEmpty()) {
+            return "category-" + System.currentTimeMillis();
+        }
+        return handle;
+    }
+
+    private String transliterateBulgarian(String text) {
+        Map<Character, String> map = Map.ofEntries(
+                Map.entry('а', "a"), Map.entry('б', "b"), Map.entry('в', "v"), Map.entry('г', "g"),
+                Map.entry('д', "d"), Map.entry('е', "e"), Map.entry('ж', "zh"), Map.entry('з', "z"),
+                Map.entry('и', "i"), Map.entry('й', "y"), Map.entry('к', "k"), Map.entry('л', "l"),
+                Map.entry('м', "m"), Map.entry('н', "n"), Map.entry('о', "o"), Map.entry('п', "p"),
+                Map.entry('р', "r"), Map.entry('с', "s"), Map.entry('т', "t"), Map.entry('у', "u"),
+                Map.entry('ф', "f"), Map.entry('х', "h"), Map.entry('ц', "ts"), Map.entry('ч', "ch"),
+                Map.entry('ш', "sh"), Map.entry('щ', "sht"), Map.entry('ъ', "a"), Map.entry('ь', ""),
+                Map.entry('ю', "yu"), Map.entry('я', "ya")
+        );
+        StringBuilder result = new StringBuilder();
+        for (char c : text.toCharArray()) {
+            result.append(map.getOrDefault(c, String.valueOf(c)));
+        }
+        return result.toString();
     }
 
     // DTOs
@@ -199,6 +268,7 @@ public class AdminCategoryController {
 
     public record CategoryCreateRequest(
             String name,
+            String handle,
             String description,
             String thumbnail,
             String parentId,

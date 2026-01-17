@@ -207,3 +207,92 @@ export async function bulkApproveProducts(minConfidence = 0.9): Promise<{
   if (!res.ok) throw new Error('Failed to bulk approve products')
   return res.json()
 }
+
+// Category API
+export interface Category {
+  id: string
+  handle: string
+  name: string
+  description: string | null
+  thumbnail: string | null
+  parentId: string | null
+  sortOrder: number
+  children: Category[]
+  productCount: number
+}
+
+export interface CategorySimple {
+  id: string
+  name: string
+  handle: string
+}
+
+export async function getCategories(): Promise<Category[]> {
+  const res = await fetch(`${API_BASE_URL}/api/categories`)
+  if (!res.ok) throw new Error('Failed to fetch categories')
+  return res.json()
+}
+
+export async function getCategoriesFlat(): Promise<CategorySimple[]> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/categories/all`)
+  if (!res.ok) throw new Error('Failed to fetch categories')
+  return res.json()
+}
+
+export async function getAdminCategories(): Promise<Category[]> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/categories`)
+  if (!res.ok) throw new Error('Failed to fetch categories')
+  return res.json()
+}
+
+export async function createCategory(data: {
+  name: string
+  handle?: string
+  description?: string
+  thumbnail?: string
+  parentId?: string
+  sortOrder?: number
+}): Promise<Category> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/categories`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error('Failed to create category')
+  return res.json()
+}
+
+export async function updateCategory(id: string, data: {
+  name?: string
+  handle?: string
+  description?: string
+  thumbnail?: string
+  parentId?: string
+  sortOrder?: number
+}): Promise<Category> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/categories/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error('Failed to update category')
+  return res.json()
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/categories/${id}`, {
+    method: 'DELETE',
+  })
+  if (!res.ok) throw new Error('Failed to delete category')
+}
+
+// Update product with full data
+export async function updateProduct(id: string, data: Partial<Product>): Promise<Product> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error('Failed to update product')
+  return res.json()
+}

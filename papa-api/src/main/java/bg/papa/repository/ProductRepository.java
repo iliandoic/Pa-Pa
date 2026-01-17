@@ -87,4 +87,14 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     int bulkApproveHighConfidence(@Param("minScore") Double minScore,
                                   @Param("currentStatus") ProductStatus currentStatus,
                                   @Param("newStatus") ProductStatus newStatus);
+
+    // Category-related queries
+    @Query("SELECT p.category.id, COUNT(p) FROM Product p WHERE p.category IS NOT NULL GROUP BY p.category.id")
+    List<Object[]> countProductsByCategory();
+
+    List<Product> findByCategoryId(UUID categoryId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Product p SET p.category = NULL WHERE p.category.id = :categoryId")
+    int clearCategoryFromProducts(@Param("categoryId") UUID categoryId);
 }
