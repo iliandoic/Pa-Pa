@@ -288,6 +288,19 @@ module.exports = {
           "0%, 100%": { transform: "rotate(-3deg)" },
           "50%": { transform: "rotate(3deg)" },
         },
+        // Mega menu animations
+        "megamenu-in": {
+          "0%": { opacity: "0", transform: "translateY(-8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "megamenu-out": {
+          "0%": { opacity: "1", transform: "translateY(0)" },
+          "100%": { opacity: "0", transform: "translateY(-4px)" },
+        },
+        "level3-in": {
+          "0%": { opacity: "0", transform: "translateX(8px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
       },
       animation: {
         ring: "ring 2.2s cubic-bezier(0.5, 0, 0.5, 1) infinite",
@@ -304,6 +317,10 @@ module.exports = {
         "bounce-soft": "bounce-soft 2s ease-in-out infinite",
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
         "wiggle": "wiggle 0.3s ease-in-out",
+        // Mega menu animations
+        "megamenu-in": "megamenu-in 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "megamenu-out": "megamenu-out 150ms ease-out forwards",
+        "level3-in": "level3-in 200ms ease-out forwards",
       },
     },
   },
