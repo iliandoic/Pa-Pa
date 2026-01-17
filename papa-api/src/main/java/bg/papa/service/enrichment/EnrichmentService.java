@@ -28,7 +28,55 @@ public class EnrichmentService {
     private final ImageUploadService imageUploadService;
     private final ObjectMapper objectMapper;
 
-    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+    private final Random random = new Random();
+
+    // Pool of real browser user agents
+    private static final String[] USER_AGENTS = {
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
+    };
+
+    private String getRandomUserAgent() {
+        return USER_AGENTS[random.nextInt(USER_AGENTS.length)];
+    }
+
+    private void randomDelay() {
+        try {
+            // Random delay between 2-5 seconds
+            int delay = 2000 + random.nextInt(3000);
+            log.debug("Waiting {}ms before next request", delay);
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private org.jsoup.Connection createConnection(String url) {
+        String userAgent = getRandomUserAgent();
+        return Jsoup.connect(url)
+                .userAgent(userAgent)
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+                .header("Accept-Language", "bg-BG,bg;q=0.9,en-US;q=0.8,en;q=0.7")
+                .header("Accept-Encoding", "gzip, deflate, br")
+                .header("Connection", "keep-alive")
+                .header("Upgrade-Insecure-Requests", "1")
+                .header("Sec-Fetch-Dest", "document")
+                .header("Sec-Fetch-Mode", "navigate")
+                .header("Sec-Fetch-Site", "none")
+                .header("Sec-Fetch-User", "?1")
+                .header("Cache-Control", "max-age=0")
+                .referrer("https://www.google.bg/")
+                .timeout(15000)
+                .followRedirects(true);
+    }
 
     /**
      * Enrich a single product by searching Bulgarian e-commerce sites
@@ -112,17 +160,24 @@ public class EnrichmentService {
     private ScrapedProductData searchByBarcode(String barcode) {
         log.debug("Searching by barcode: {}", barcode);
 
-        // Try eMag.bg
-        ScrapedProductData result = searchEmagByBarcode(barcode);
+        // Try Galen.bg first (best for baby/pharmacy products)
+        ScrapedProductData result = searchGalenByBarcode(barcode);
         if (result != null && result.getTitle() != null) {
-            result.setMatchScore(0.95); // Barcode match = high confidence
+            result.setMatchScore(0.95);
+            return result;
+        }
+
+        // Try eMag.bg
+        result = searchEmagByBarcode(barcode);
+        if (result != null && result.getTitle() != null) {
+            result.setMatchScore(0.95);
             return result;
         }
 
         // Try Gladen.bg
         result = searchGladenByBarcode(barcode);
         if (result != null && result.getTitle() != null) {
-            result.setMatchScore(0.95); // Barcode match = high confidence
+            result.setMatchScore(0.95);
             return result;
         }
 
@@ -138,8 +193,17 @@ public class EnrichmentService {
         // Clean up the product name for better search
         String searchQuery = cleanSearchQuery(productName);
 
+        // Try Galen.bg first (best for baby/pharmacy products)
+        ScrapedProductData result = searchGalenByName(searchQuery);
+        if (result != null && result.getMatchScore() >= 0.7) return result;
+
         // Try eMag.bg
-        ScrapedProductData result = searchEmagByName(searchQuery);
+        ScrapedProductData emagResult = searchEmagByName(searchQuery);
+        if (emagResult != null) {
+            if (result == null || emagResult.getMatchScore() > result.getMatchScore()) {
+                result = emagResult;
+            }
+        }
         if (result != null && result.getMatchScore() >= 0.7) return result;
 
         // Try Gladen.bg
@@ -158,11 +222,9 @@ public class EnrichmentService {
      */
     private ScrapedProductData searchEmagByBarcode(String barcode) {
         try {
+            randomDelay();
             String url = "https://www.emag.bg/search/" + URLEncoder.encode(barcode, StandardCharsets.UTF_8);
-            Document doc = Jsoup.connect(url)
-                    .userAgent(USER_AGENT)
-                    .timeout(10000)
-                    .get();
+            Document doc = createConnection(url).get();
 
             // Check if we got a direct product page or search results
             Element productCard = doc.selectFirst(".card-v2-wrapper");
@@ -181,12 +243,10 @@ public class EnrichmentService {
      */
     private ScrapedProductData searchEmagByName(String query) {
         try {
+            randomDelay();
             String url = "https://www.emag.bg/search/" + URLEncoder.encode(query, StandardCharsets.UTF_8);
             log.debug("Searching eMag: {}", url);
-            Document doc = Jsoup.connect(url)
-                    .userAgent(USER_AGENT)
-                    .timeout(10000)
-                    .get();
+            Document doc = createConnection(url).get();
 
             Element productCard = doc.selectFirst(".card-v2-wrapper");
             if (productCard != null) {
@@ -251,10 +311,8 @@ public class EnrichmentService {
      * Fetch additional details from eMag product page
      */
     private void enrichFromEmagProductPage(ScrapedProductData data) throws IOException {
-        Document doc = Jsoup.connect(data.getSourceUrl())
-                .userAgent(USER_AGENT)
-                .timeout(10000)
-                .get();
+        randomDelay();
+        Document doc = createConnection(data.getSourceUrl()).get();
 
         // Get description
         Element descEl = doc.selectFirst(".product-page-description-text");
@@ -303,11 +361,9 @@ public class EnrichmentService {
      */
     private ScrapedProductData searchGladenByBarcode(String barcode) {
         try {
+            randomDelay();
             String url = "https://shop.gladen.bg/search?q=" + URLEncoder.encode(barcode, StandardCharsets.UTF_8);
-            Document doc = Jsoup.connect(url)
-                    .userAgent(USER_AGENT)
-                    .timeout(10000)
-                    .get();
+            Document doc = createConnection(url).get();
 
             Element productCard = doc.selectFirst(".product-card, .product-item");
             if (productCard != null) {
@@ -325,11 +381,9 @@ public class EnrichmentService {
      */
     private ScrapedProductData searchGladenByName(String query) {
         try {
+            randomDelay();
             String url = "https://shop.gladen.bg/search?q=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
-            Document doc = Jsoup.connect(url)
-                    .userAgent(USER_AGENT)
-                    .timeout(10000)
-                    .get();
+            Document doc = createConnection(url).get();
 
             Element productCard = doc.selectFirst(".product-card, .product-item");
             if (productCard != null) {
@@ -376,6 +430,191 @@ public class EnrichmentService {
         }
 
         return data;
+    }
+
+    // =========================================================================
+    // GALEN.BG - Bulgarian pharmacy with great baby product data
+    // =========================================================================
+
+    /**
+     * Search Galen.bg by barcode
+     */
+    private ScrapedProductData searchGalenByBarcode(String barcode) {
+        try {
+            randomDelay();
+            String url = "https://galen.bg/catalogsearch/result/?q=" + URLEncoder.encode(barcode, StandardCharsets.UTF_8);
+            log.debug("Searching Galen by barcode: {}", url);
+            Document doc = createConnection(url).get();
+            return scrapeGalenFromDataLayer(doc, barcode);
+        } catch (IOException e) {
+            log.debug("Galen search failed for barcode {}: {}", barcode, e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Search Galen.bg by product name
+     */
+    private ScrapedProductData searchGalenByName(String query) {
+        try {
+            randomDelay();
+            String url = "https://galen.bg/catalogsearch/result/?q=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
+            log.debug("Searching Galen: {}", url);
+            Document doc = createConnection(url).get();
+            return scrapeGalenFromDataLayer(doc, query);
+        } catch (IOException e) {
+            log.debug("Galen search failed for query {}: {}", query, e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Scrape product data from Galen.bg's dataLayer JSON
+     * Galen uses Google Tag Manager dataLayer which contains product info in JSON format
+     */
+    private ScrapedProductData scrapeGalenFromDataLayer(Document doc, String searchTerm) {
+        try {
+            // Find the script containing dl4Objects (dataLayer data)
+            String html = doc.html();
+            int start = html.indexOf("dl4Objects = [");
+            if (start == -1) {
+                log.debug("Galen: No dataLayer found");
+                return null;
+            }
+
+            int end = html.indexOf("];", start);
+            if (end == -1) return null;
+
+            String jsonArray = html.substring(start + 13, end + 1);
+
+            // Parse the JSON to find ecommerce items
+            // Look for item_name pattern in the JSON
+            int itemsStart = jsonArray.indexOf("\"items\":[");
+            if (itemsStart == -1) {
+                log.debug("Galen: No items in dataLayer");
+                return null;
+            }
+
+            // Extract first product from items array
+            int firstItemStart = jsonArray.indexOf("{\"item_name\":", itemsStart);
+            if (firstItemStart == -1) return null;
+
+            // Find the end of this item object
+            int braceCount = 0;
+            int firstItemEnd = firstItemStart;
+            for (int i = firstItemStart; i < jsonArray.length(); i++) {
+                if (jsonArray.charAt(i) == '{') braceCount++;
+                if (jsonArray.charAt(i) == '}') braceCount--;
+                if (braceCount == 0) {
+                    firstItemEnd = i + 1;
+                    break;
+                }
+            }
+
+            String itemJson = jsonArray.substring(firstItemStart, firstItemEnd);
+
+            ScrapedProductData data = new ScrapedProductData();
+            data.setSource("galen.bg");
+
+            // Extract item_name
+            String title = extractJsonValue(itemJson, "item_name");
+            if (title != null) {
+                data.setTitle(title.trim());
+            }
+
+            // Extract item_brand
+            String brand = extractJsonValue(itemJson, "item_brand");
+            if (brand != null) {
+                data.setBrand(brand);
+            }
+
+            // Extract item_id for building URL
+            String itemId = extractJsonValue(itemJson, "item_id");
+            if (itemId != null) {
+                // We'll need to search for the actual product URL in the HTML
+                Element productLink = doc.selectFirst("a.product-item-link, a.product-item-photo");
+                if (productLink != null) {
+                    data.setSourceUrl(productLink.attr("href"));
+                }
+            }
+
+            // Extract image from the page HTML
+            Element productImage = doc.selectFirst(".product-item-photo img, .product-image-photo");
+            if (productImage != null) {
+                String imgSrc = productImage.attr("src");
+                if (imgSrc.isEmpty()) imgSrc = productImage.attr("data-src");
+                if (!imgSrc.isEmpty()) {
+                    data.setImageUrl(imgSrc);
+                }
+            }
+
+            // Calculate match score
+            if (data.getTitle() != null) {
+                data.setMatchScore(calculateSimilarity(searchTerm, data.getTitle()));
+                log.info("Galen found: '{}' with score {}", data.getTitle(), data.getMatchScore());
+            }
+
+            // If we have a product URL, fetch more details
+            if (data.getSourceUrl() != null && !data.getSourceUrl().isEmpty()) {
+                try {
+                    enrichFromGalenProductPage(data);
+                } catch (Exception e) {
+                    log.debug("Could not fetch Galen product page: {}", e.getMessage());
+                }
+            }
+
+            return data.getTitle() != null ? data : null;
+
+        } catch (Exception e) {
+            log.debug("Error parsing Galen dataLayer: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Extract value from JSON string (simple extraction without full parsing)
+     */
+    private String extractJsonValue(String json, String key) {
+        String pattern = "\"" + key + "\":\"";
+        int start = json.indexOf(pattern);
+        if (start == -1) return null;
+        start += pattern.length();
+        int end = json.indexOf("\"", start);
+        if (end == -1) return null;
+        return json.substring(start, end)
+                .replace("\\u0027", "'")
+                .replace("\\u0026", "&")
+                .replace("\\n", " ")
+                .replace("\\r", "")
+                .replace("\\t", " ");
+    }
+
+    /**
+     * Fetch additional details from Galen.bg product page
+     */
+    private void enrichFromGalenProductPage(ScrapedProductData data) throws IOException {
+        randomDelay();
+        Document doc = createConnection(data.getSourceUrl()).get();
+
+        // Get description
+        Element descEl = doc.selectFirst(".product.attribute.description .value, .product-info-description");
+        if (descEl != null) {
+            data.setDescription(descEl.text().trim());
+        }
+
+        // Get all product images
+        Elements imgEls = doc.select(".product.media img, .gallery-placeholder img");
+        List<String> images = new ArrayList<>();
+        for (Element img : imgEls) {
+            String src = img.attr("src");
+            if (src.isEmpty()) src = img.attr("data-src");
+            if (!src.isEmpty() && !images.contains(src) && src.contains("product")) {
+                images.add(src);
+            }
+        }
+        if (!images.isEmpty()) {
+            data.setImageUrls(images);
+        }
     }
 
     /**
@@ -447,11 +686,12 @@ public class EnrichmentService {
                 return null;
             }
 
+            // Small delay for image downloads too
+            try { Thread.sleep(500 + random.nextInt(1000)); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+
             // Download image bytes
-            byte[] imageBytes = Jsoup.connect(imageUrl)
-                    .userAgent(USER_AGENT)
+            byte[] imageBytes = createConnection(imageUrl)
                     .ignoreContentType(true)
-                    .timeout(15000)
                     .execute()
                     .bodyAsBytes();
 
